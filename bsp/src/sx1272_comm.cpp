@@ -118,7 +118,7 @@ void SX1272_Setup()
 *	stateRX = '2' => Receive command not executed
 *	stateRX = '3' => RSSI command not executed
 */
-char RX(char* message, uint32_t waitPeriod = 1000)
+char RX(uint32_t waitPeriod = 1000)
 {
 	char stateRX = '0';
 	uint8_t lgMessage = 0;
@@ -138,14 +138,11 @@ char RX(char* message, uint32_t waitPeriod = 1000)
 				// Check if the received packet is correct
 				// The length and the content of the packet is checked
 				// if it is valid, the cpok counter is incremented
-				lgMessage = strlen(message);
+				lgMessage = MAX_LENGTH_MSG;
 				if (sx1272.packet_received.length >= lgMessage) // check the length
 				{
-					if (memcmp(message, sx1272.packet_received.data, lgMessage) == 0) // check the content
-					{
-						cpok = cpok + 1;
-						stateRX = '0';
-					}
+					cpok = cpok + 1;
+					stateRX = '0';
 				}
 			}
 			else

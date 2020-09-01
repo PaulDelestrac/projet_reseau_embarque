@@ -13,6 +13,7 @@ void TX(uint8_t destAddress, uint32_t waitPeriod);
 // Main parameters
 #define OUT_POWER POW_14	 // min -1, max 14
 #define MOD_TYPE 0           // 0: LORA, 1:FSK
+#define MAX_LENGTH_MSG 32
 
 // LORA configuration
 #define BANDWIDTH BW_125 // BW_125, BW_250 or BW_500
