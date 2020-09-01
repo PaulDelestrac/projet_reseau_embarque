@@ -33,18 +33,25 @@ int main(void)
 
 	// Initialize LED and USER Button
 	BSP_LED_Init();
-	BSP_PB_Init();
+	//BSP_PB_Init();
+	BSP_PB6_Init();
+
+	//Initialise Timer and NVIC for interrupt
+	BSP_TIMER_Timebase_Init();
+	BSP_NVIC_Init();
 
 	// Initialize Debug Console
 	BSP_Console_Init();
 	my_printf("\r\nConsole Ready!\r\n");
 	my_printf("SYSCLK = %d Hz\r\n", SystemCoreClock);
 
-	setup();
+	//setup();
+	BSP_LED_On();
+	//BSP_TIMER2_Off();
 
 	while(1)
 	{
-		TX();
+		//TX();
 	}
 }
 

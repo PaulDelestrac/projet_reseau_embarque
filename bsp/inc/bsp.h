@@ -30,7 +30,24 @@ void	BSP_LED_Toggle	(void);
  */
 
 void	BSP_PB_Init		(void);
+void	BSP_PB6_Init		(void);
 uint8_t	BSP_PB_GetState	(void);
+
+
+/*
+ * Flag
+ */
+//uint8_t flagCS;
+//uint8_t flagTimer;
+
+
+/*
+ * Timer & interupt Fonctions
+ */
+void BSP_TIMER2_Off(void);
+void BSP_TIMER2_On(void);
+void BSP_NVIC_Init(void);
+void BSP_TIMER_Timebase_Init(void);
 
 
 /*
