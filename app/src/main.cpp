@@ -1,12 +1,5 @@
-/*
- * main.c
- *
- *  Created on: 16 août 2018
- *      Author: Laurent
- */
-
+#include <sx1272_comm.h>
 #include "stm32f0xx.h"
-#include "rxNode.h"
 
 extern "C"{
 	#include "main.h"
@@ -20,14 +13,12 @@ extern "C"{
 
 static uint8_t SystemClock_Config	(void);
 
-
 /*
  * Project Entry Point
  */
 
 int main(void)
 {
-	//uint8_t var;
 	// Configure System Clock for 48MHz from 8MHz HSE
 	SystemClock_Config();
 
@@ -40,11 +31,14 @@ int main(void)
 	my_printf("\r\nConsole Ready!\r\n");
 	my_printf("SYSCLK = %d Hz\r\n", SystemCoreClock);
 
-	setup();
+	// Initialize SPI1
+	BSP_SPI1_Init();
+
+	// Setup SX1272 according to rxNode.h
+	SX1272_Setup();
 
 	while(1)
 	{
-		TX();
 	}
 }
 

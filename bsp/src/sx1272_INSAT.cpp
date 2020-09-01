@@ -3,7 +3,7 @@
  *  Library for managing Libelium LoRa modules, based on Semtech SX1272
 
 	Based on the library sx1272.h developed by Libelium.
-	Updated by Alexandre Boyer (INSA de Toulouse) for educational purpose. 
+	Updated by Alexandre Boyer (INSA de Toulouse) for educational purpose.
  *
  *  Copyright (C) 2016 Libelium Comunicaciones Distribuidas S.L.
  *  http://www.libelium.com
@@ -24,16 +24,13 @@
  *  Version:		3.0
  *  Design:			David Gascón
  *  Implementation:	Covadonga Albiñana, Yuri Carmona
- 
+
  */
-
-
 
 #include "sx1272_INSAT.h"
 
 extern "C"
 {
-	//#include <bsp.h>
 	#include <delay.h>
 	#include <math.h>
 	#include <string.h>
@@ -54,12 +51,8 @@ sx1272_INSAT::sx1272_INSAT()
 	_reception = CORRECT_PACKET;
 	_retries = 0;
 	_maxRetries = 3;
-	packet_sent.retry = _retries;	
+	packet_sent.retry = _retries;
 };
-
-
-
-
 
 /*
  Function: Sets the module ON.
@@ -71,44 +64,44 @@ sx1272_INSAT::sx1272_INSAT()
 uint8_t sx1272_INSAT::ON(int type_mod)
 {
 	uint8_t state = 2;
-	
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'ON'"));
-	#endif
-	
+
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'ON'"));
+#endif
+
 	BSP_SPI1_Init();
 	delay_ms(100);
-    //pinMode(SX1272_RST,OUTPUT);
-    //digitalWrite(SX1272_RST,HIGH);
-    delay_ms(100);
-    //digitalWrite(SX1272_RST,LOW);
-    delay_ms(100);
-	
+	//pinMode(SX1272_RST,OUTPUT);
+	//digitalWrite(SX1272_RST,HIGH);
+	delay_ms(100);
+	//digitalWrite(SX1272_RST,LOW);
+	delay_ms(100);
+
 	// Set Maximum Over Current Protection
 	state = setMaxCurrent(0x1B);
-	
-	if( state == 0 )
+
+	if (state == 0)
 	{
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Setting ON with maximum current supply ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Setting ON with maximum current supply ##"));
+		my_printf();
+#endif
 	}
 	else
 	{
 		return 1;
 	}
 
-  if(type_mod==0)
-  {
-	// set LoRa mode
-	  state = setLORA();
-  }
-  else
-  {
-    state = setFSK();
-  }
+	if (type_mod == 0)
+	{
+		// set LoRa mode
+		state = setLORA();
+	}
+	else
+	{
+		state = setFSK();
+	}
 	return state;
 }
 
@@ -118,29 +111,26 @@ uint8_t sx1272_INSAT::ON(int type_mod)
 */
 void sx1272_INSAT::OFF(int type_mod)
 {
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'OFF'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'OFF'"));
+#endif
 
-  if(type_mod==0)
-  {
-    writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // FSK standby mode    
-    writeRegister(REG_OP_MODE, LORA_SLEEP_MODE); // FSK standby mode        
-  }
-  else
-  {
-    writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // FSK standby mode    
-    writeRegister(REG_OP_MODE, FSK_SLEEP_MODE); // FSK standby mode    
-  }
+	if (type_mod == 0)
+	{
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // FSK standby mode
+		writeRegister(REG_OP_MODE, LORA_SLEEP_MODE);   // FSK standby mode
+	}
+	else
+	{
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // FSK standby mode
+		writeRegister(REG_OP_MODE, FSK_SLEEP_MODE);	  // FSK standby mode
+	}
 
-	
-
-    
-    #if (SX1272_debug_mode > 1)
-		my_printf(F("## Setting OFF ##"));
-		my_printf();
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Setting OFF ##"));
+	my_printf();
+#endif
 }
 
 /*
@@ -153,18 +143,18 @@ uint8_t sx1272_INSAT::readRegister(uint8_t address)
 {
 	uint8_t var;
 
-    BSP_Read(address, &var, 1);
-    
-    #if (SX1272_debug_mode > 1)
-        my_printf(F("## Reading:  ##\t"));
-		my_printf(F("Register "));
-		my_printf(address,HEX);
-		my_printf(F(":  "));
-		my_printf(value,HEX);
-		my_printf();
-	#endif
+	BSP_Read(address, &var, 1);
 
-    return (uint8_t)var;
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Reading:  ##\t"));
+	my_printf(F("Register "));
+	my_printf(address, HEX);
+	my_printf(F(":  "));
+	my_printf(value, HEX);
+	my_printf();
+#endif
+
+	return (uint8_t)var;
 }
 
 /*
@@ -176,66 +166,65 @@ uint8_t sx1272_INSAT::readRegister(uint8_t address)
 */
 void sx1272_INSAT::writeRegister(uint8_t address, uint8_t data)
 {
-	
+
 	BSP_Write(address, data);
 
-    #if (SX1272_debug_mode > 1)
-        my_printf(F("## Writing:  ##\t"));
-		my_printf(F("Register "));
-		bitClear(address, 7);
-		my_printf(address,HEX);
-		my_printf(F(":  "));
-		my_printf(data,HEX);
-		my_printf();
-	#endif
-
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Writing:  ##\t"));
+	my_printf(F("Register "));
+	bitClear(address, 7);
+	my_printf(address, HEX);
+	my_printf(F(":  "));
+	my_printf(data, HEX);
+	my_printf();
+#endif
 }
 
 /*
  * Function: Clears the interruption flags
- * 
- * LoRa Configuration registers are accessed through the SPI interface. 
- * Registers are readable in all device mode including Sleep. However, they 
+ *
+ * LoRa Configuration registers are accessed through the SPI interface.
+ * Registers are readable in all device mode including Sleep. However, they
  * should be written only in Sleep and Stand-by modes.
- * 
+ *
  * Returns: Nothing
 */
 void sx1272_INSAT::clearFlags()
 {
-    uint8_t st0;
+	uint8_t st0;
 
 	// Save the previous status
-	st0 = readRegister(REG_OP_MODE);		
+	st0 = readRegister(REG_OP_MODE);
 
-	if( _modem == LORA )
+	if (_modem == LORA)
 	{
 		/// LoRa mode
-		// Stdby mode to write in registers		
-		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	
+		// Stdby mode to write in registers
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
 		// LoRa mode flags register
-		writeRegister(REG_IRQ_FLAGS, 0xFF);	
+		writeRegister(REG_IRQ_FLAGS, 0xFF);
 		// Getting back to previous status
 		writeRegister(REG_OP_MODE, st0);
-		
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## LoRa flags cleared ##"));
-		#endif
+
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## LoRa flags cleared ##"));
+#endif
 	}
 	else
 	{
 		/// FSK mode
 		// Stdby mode to write in registers
-		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
 		// FSK mode flags1 register
 		writeRegister(REG_IRQ_FLAGS1, 0xFF);
-		// FSK mode flags2 register 
+		// FSK mode flags2 register
 		writeRegister(REG_IRQ_FLAGS2, 0xFF);
 		// Getting back to previous status
 		writeRegister(REG_OP_MODE, st0);
-		
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## FSK flags cleared ##"));
-		#endif
+
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## FSK flags cleared ##"));
+#endif
 	}
 }
 
@@ -248,45 +237,45 @@ void sx1272_INSAT::clearFlags()
 */
 uint8_t sx1272_INSAT::setLORA()
 {
-    uint8_t state = 2;
-    uint8_t st0;
+	uint8_t state = 2;
+	uint8_t st0;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setLORA'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setLORA'"));
+#endif
 
-	writeRegister(REG_OP_MODE, FSK_SLEEP_MODE);    // Sleep mode (mandatory to set LoRa mode)
-	writeRegister(REG_OP_MODE, LORA_SLEEP_MODE);    // LoRa sleep mode
-	writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	// LoRa standby mode
+	writeRegister(REG_OP_MODE, FSK_SLEEP_MODE);	   // Sleep mode (mandatory to set LoRa mode)
+	writeRegister(REG_OP_MODE, LORA_SLEEP_MODE);   // LoRa sleep mode
+	writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // LoRa standby mode
 
-	writeRegister(REG_MAX_PAYLOAD_LENGTH,MAX_LENGTH);
-		
+	writeRegister(REG_MAX_PAYLOAD_LENGTH, MAX_LENGTH);
+
 	// Set RegModemConfig1 to Default values
-	writeRegister(REG_MODEM_CONFIG1, 0x08);	
+	writeRegister(REG_MODEM_CONFIG1, 0x08);
 	// Set RegModemConfig2 to Default values
-	writeRegister(REG_MODEM_CONFIG2, 0x74);		
+	writeRegister(REG_MODEM_CONFIG2, 0x74);
 
 	//delay_ms(100);
 
-	st0 = readRegister(REG_OP_MODE);	// Reading config mode
-	if( st0 == LORA_STANDBY_MODE )
+	st0 = readRegister(REG_OP_MODE); // Reading config mode
+	if (st0 == LORA_STANDBY_MODE)
 	{ // LoRa mode
 		_modem = LORA;
 		state = 0;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## LoRa set with success ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## LoRa set with success ##"));
+		my_printf();
+#endif
 	}
 	else
 	{ // FSK mode
 		_modem = FSK;
 		state = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** There has been an error while setting LoRa **"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** There has been an error while setting LoRa **"));
+		my_printf();
+#endif
 	}
 	return state;
 }
@@ -301,65 +290,65 @@ uint8_t sx1272_INSAT::setLORA()
 uint8_t sx1272_INSAT::setFSK()
 {
 	uint8_t state = 2;
-    uint8_t st0;
-    uint8_t config1;
+	uint8_t st0;
+	uint8_t config1;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setFSK'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setFSK'"));
+#endif
 
-  writeRegister(REG_OP_MODE, LORA_SLEEP_MODE);
-	writeRegister(REG_OP_MODE, FSK_SLEEP_MODE);	// Sleep mode (mandatory to change mode)
-	writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	// FSK standby mode
- 
+	writeRegister(REG_OP_MODE, LORA_SLEEP_MODE);
+	writeRegister(REG_OP_MODE, FSK_SLEEP_MODE);	  // Sleep mode (mandatory to change mode)
+	writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // FSK standby mode
+
 	/////////////////////////////////////////////////////////////////////////////////////////
-  // Config REG_PACKET_CONFIG1
+	// Config REG_PACKET_CONFIG1
 	config1 = readRegister(REG_PACKET_CONFIG1);
-	config1 = config1 & 0x7D;		// clears bits 8 and 1 from REG_PACKET_CONFIG1
-	config1 = config1 | 0x04;		// sets bit 2 from REG_PACKET_CONFIG1
-  writeRegister(REG_PACKET_CONFIG1,config1);	// Packet format fixe, AddressFiltering = NodeAddress + BroadcastAddress
-  /////////////////////////////////////////////////////////////////////////////////////////
-  
-	writeRegister(REG_FIFO_THRESH, 0x80);	// condition to start packet tx
-	
+	config1 = config1 & 0x7D;					// clears bits 8 and 1 from REG_PACKET_CONFIG1
+	config1 = config1 | 0x04;					// sets bit 2 from REG_PACKET_CONFIG1
+	writeRegister(REG_PACKET_CONFIG1, config1); // Packet format fixe, AddressFiltering = NodeAddress + BroadcastAddress
+												/////////////////////////////////////////////////////////////////////////////////////////
+
+	writeRegister(REG_FIFO_THRESH, 0x80); // condition to start packet tx
+
 	/////////////////////////////////////////////////////////////////////////////////////////
-  // Config REG_SYNC_CONFIG
+	// Config REG_SYNC_CONFIG
 	config1 = readRegister(REG_SYNC_CONFIG);
 	config1 = config1 & 0x3F; //Auto-restart off, sync word detection on, sync size = 4 words
-	writeRegister(REG_SYNC_CONFIG,config1);
+	writeRegister(REG_SYNC_CONFIG, config1);
 
-  writeRegister(REG_FDEV_MSB,0x07);
-  writeRegister(REG_FDEV_LSB,0xFF);
+	writeRegister(REG_FDEV_MSB, 0x07);
+	writeRegister(REG_FDEV_LSB, 0xFF);
 
-  writeRegister(REG_BITRATE_MSB,0x68);
-  writeRegister(REG_BITRATE_LSB,0x2B);
+	writeRegister(REG_BITRATE_MSB, 0x68);
+	writeRegister(REG_BITRATE_LSB, 0x2B);
 
-  /////////////////////////////////////////////////////////////////////////////////////////
-  // Config REG_PACKET_CONFIG2
-  writeRegister(REG_PACKET_CONFIG2,0x40); // packet mode
-  /////////////////////////////////////////////////////////////////////////////////////////
-	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	// Config REG_PACKET_CONFIG2
+	writeRegister(REG_PACKET_CONFIG2, 0x40); // packet mode
+											 /////////////////////////////////////////////////////////////////////////////////////////
+
 	delay_ms(100);
 
-	st0 = readRegister(REG_OP_MODE);	// Reading config mode
-	if( st0 == FSK_STANDBY_MODE )
+	st0 = readRegister(REG_OP_MODE); // Reading config mode
+	if (st0 == FSK_STANDBY_MODE)
 	{ // FSK mode
 		_modem = FSK;
 		state = 0;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## FSK set with success ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## FSK set with success ##"));
+		my_printf();
+#endif
 	}
 	else
 	{ // LoRa mode
 		_modem = LORA;
 		state = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** There has been an error while setting FSK **"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** There has been an error while setting FSK **"));
+		my_printf();
+#endif
 	}
 	return state;
 }
@@ -377,51 +366,51 @@ uint8_t sx1272_INSAT::getMode()
 	int8_t state = 2;
 	uint8_t value = 0x00;
 
-	#if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'getMode'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getMode'"));
+#endif
 
 	// Save the previous status
-	st0 = readRegister(REG_OP_MODE);		
+	st0 = readRegister(REG_OP_MODE);
 	// Setting LoRa mode
-	if( _modem == FSK )
+	if (_modem == FSK)
 	{
-		setLORA();					
+		setLORA();
 	}
 	value = readRegister(REG_MODEM_CONFIG1);
-	_bandwidth = (value >> 6);   				// Storing 2 MSB from REG_MODEM_CONFIG1 (=_bandwidth)
-	_codingRate = (value >> 3) & 0x07;  		// Storing third, forth and fifth bits from
-	value = readRegister(REG_MODEM_CONFIG2);	// REG_MODEM_CONFIG1 (=_codingRate)
-	_spreadingFactor = (value >> 4) & 0x0F; 	// Storing 4 MSB from REG_MODEM_CONFIG2 (=_spreadingFactor)
+	_bandwidth = (value >> 6);				 // Storing 2 MSB from REG_MODEM_CONFIG1 (=_bandwidth)
+	_codingRate = (value >> 3) & 0x07;		 // Storing third, forth and fifth bits from
+	value = readRegister(REG_MODEM_CONFIG2); // REG_MODEM_CONFIG1 (=_codingRate)
+	_spreadingFactor = (value >> 4) & 0x0F;	 // Storing 4 MSB from REG_MODEM_CONFIG2 (=_spreadingFactor)
 	state = 1;
 
-	if( isBW(_bandwidth) )		// Checking available values for:
-	{								//		_bandwidth
-		if( isCR(_codingRate) )		//		_codingRate
-		{							//		_spreadingFactor
-			if( isSF(_spreadingFactor) )
+	if (isBW(_bandwidth))	   // Checking available values for:
+	{						   //		_bandwidth
+		if (isCR(_codingRate)) //		_codingRate
+		{					   //		_spreadingFactor
+			if (isSF(_spreadingFactor))
 			{
 				state = 0;
 			}
 		}
 	}
 
-	#if (SX1272_debug_mode > 1)
-	  my_printf(F("## Parameters from configuration mode are:"));
-	  my_printf(F("Bandwidth: "));
-	  my_printf(_bandwidth,HEX);
-	  my_printf();
-	  my_printf(F("\t Coding Rate: "));
-	  my_printf(_codingRate,HEX);
-	  my_printf();
-	  my_printf(F("\t Spreading Factor: "));
-	  my_printf(_spreadingFactor,HEX);
-	  my_printf(F(" ##"));
-	  my_printf();
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Parameters from configuration mode are:"));
+	my_printf(F("Bandwidth: "));
+	my_printf(_bandwidth, HEX);
+	my_printf();
+	my_printf(F("\t Coding Rate: "));
+	my_printf(_codingRate, HEX);
+	my_printf();
+	my_printf(F("\t Spreading Factor: "));
+	my_printf(_spreadingFactor, HEX);
+	my_printf(F(" ##"));
+	my_printf();
+#endif
 
-	writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
 	return state;
 }
 
@@ -442,210 +431,238 @@ int8_t sx1272_INSAT::setMode(uint8_t mode)
 	uint8_t config1 = 0x00;
 	uint8_t config2 = 0x00;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setMode'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setMode'"));
+#endif
 
-	st0 = readRegister(REG_OP_MODE);		// Save the previous status
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
 
 	// 'setMode' function only can be called in LoRa mode
-	if( _modem == FSK )
+	if (_modem == FSK)
 	{
 		setLORA();
 	}
-	
+
 	// LoRa standby mode
-	writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	
+	writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
 
 	switch (mode)
 	{
-		// mode 1 (better reach, medium time on air)
-		case 1: 	setCR(CR_5);		// CR = 4/5
-					setSF(SF_12);		// SF = 12
-					setBW(BW_125);		// BW = 125 KHz
-					break;
+	// mode 1 (better reach, medium time on air)
+	case 1:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_12);  // SF = 12
+		setBW(BW_125); // BW = 125 KHz
+		break;
 
-		// mode 2 (medium reach, less time on air)
-		case 2: 	setCR(CR_5);		// CR = 4/5
-					setSF(SF_12);		// SF = 12
-					setBW(BW_250);		// BW = 250 KHz
-					break;
+	// mode 2 (medium reach, less time on air)
+	case 2:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_12);  // SF = 12
+		setBW(BW_250); // BW = 250 KHz
+		break;
 
-		// mode 3 (worst reach, less time on air)
-		case 3: 	setCR(CR_5);		// CR = 4/5
-					setSF(SF_10);		// SF = 10
-					setBW(BW_125);		// BW = 125 KHz
-					break;
+	// mode 3 (worst reach, less time on air)
+	case 3:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_10);  // SF = 10
+		setBW(BW_125); // BW = 125 KHz
+		break;
 
-		// mode 4 (better reach, low time on air)
-		case 4: 	setCR(CR_5);		// CR = 4/5
-					setSF(SF_12);		// SF = 12
-					setBW(BW_500);		// BW = 500 KHz
-					break;
+	// mode 4 (better reach, low time on air)
+	case 4:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_12);  // SF = 12
+		setBW(BW_500); // BW = 500 KHz
+		break;
 
-		// mode 5 (better reach, medium time on air)
-		case 5: 	setCR(CR_5);		// CR = 4/5
-					setSF(SF_10);		// SF = 10
-					setBW(BW_250);		// BW = 250 KHz
-					break;
+	// mode 5 (better reach, medium time on air)
+	case 5:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_10);  // SF = 10
+		setBW(BW_250); // BW = 250 KHz
+		break;
 
-		// mode 6 (better reach, worst time-on-air)
-		case 6: 	setCR(CR_5);		// CR = 4/5
-					setSF(SF_11);		// SF = 11
-					setBW(BW_500);		// BW = 500 KHz
-					break;
+	// mode 6 (better reach, worst time-on-air)
+	case 6:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_11);  // SF = 11
+		setBW(BW_500); // BW = 500 KHz
+		break;
 
-		// mode 7 (medium-high reach, medium-low time-on-air)
-		case 7: 	setCR(CR_5);		// CR = 4/5
-					setSF(SF_9);		// SF = 9
-					setBW(BW_250);		// BW = 250 KHz
-					break;
+	// mode 7 (medium-high reach, medium-low time-on-air)
+	case 7:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_9);   // SF = 9
+		setBW(BW_250); // BW = 250 KHz
+		break;
 
-		// mode 8 (medium reach, medium time-on-air)
-		case 8:		setCR(CR_5);		// CR = 4/5
-					setSF(SF_9);		// SF = 9
-					setBW(BW_500);		// BW = 500 KHz
-					break;
+	// mode 8 (medium reach, medium time-on-air)
+	case 8:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_9);   // SF = 9
+		setBW(BW_500); // BW = 500 KHz
+		break;
 
-		// mode 9 (medium-low reach, medium-high time-on-air)
-		case 9: 	setCR(CR_5);		// CR = 4/5
-					setSF(SF_8);		// SF = 8
-					setBW(BW_500);		// BW = 500 KHz
-					break;
+	// mode 9 (medium-low reach, medium-high time-on-air)
+	case 9:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_8);   // SF = 8
+		setBW(BW_500); // BW = 500 KHz
+		break;
 
-		// mode 10 (worst reach, less time_on_air)
-		case 10:	setCR(CR_5);		// CR = 4/5
-					setSF(SF_7);		// SF = 7
-					setBW(BW_500);		// BW = 500 KHz
-					break;
+	// mode 10 (worst reach, less time_on_air)
+	case 10:
+		setCR(CR_5);   // CR = 4/5
+		setSF(SF_7);   // SF = 7
+		setBW(BW_500); // BW = 500 KHz
+		break;
 
-		default:	state = -1; // The indicated mode doesn't exist
-
+	default:
+		state = -1; // The indicated mode doesn't exist
 	};
 
-
 	// Check proper register configuration
-	if( state == -1 )	// if state = -1, don't change its value
+	if (state == -1) // if state = -1, don't change its value
 	{
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** The indicated mode doesn't exist, "));
-			my_printf(F("please select from 1 to 10 **"));
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** The indicated mode doesn't exist, "));
+		my_printf(F("please select from 1 to 10 **"));
+#endif
 	}
 	else
 	{
 		state = 1;
 		config1 = readRegister(REG_MODEM_CONFIG1);
 		switch (mode)
-		{	//		Different way to check for each mode:
-			// (config1 >> 3) ---> take out bits 7-3 from REG_MODEM_CONFIG1 (=_bandwidth & _codingRate together)
-			// (config2 >> 4) ---> take out bits 7-4 from REG_MODEM_CONFIG2 (=_spreadingFactor)
+		{ //		Different way to check for each mode:
+		// (config1 >> 3) ---> take out bits 7-3 from REG_MODEM_CONFIG1 (=_bandwidth & _codingRate together)
+		// (config2 >> 4) ---> take out bits 7-4 from REG_MODEM_CONFIG2 (=_spreadingFactor)
 
-			// mode 1: BW = 125 KHz, CR = 4/5, SF = 12.
-			case 1:  if( (config1 >> 3) == 0x01 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_12 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
+		// mode 1: BW = 125 KHz, CR = 4/5, SF = 12.
+		case 1:
+			if ((config1 >> 3) == 0x01)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_12)
+				{
+					state = 0;
+				}
+			}
+			break;
 
+		// mode 2: BW = 250 KHz, CR = 4/5, SF = 12.
+		case 2:
+			if ((config1 >> 3) == 0x09)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_12)
+				{
+					state = 0;
+				}
+			}
+			break;
 
-			// mode 2: BW = 250 KHz, CR = 4/5, SF = 12.
-			case 2:  if( (config1 >> 3) == 0x09 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_12 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
+		// mode 3: BW = 125 KHz, CR = 4/5, SF = 10.
+		case 3:
+			if ((config1 >> 3) == 0x01)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_10)
+				{
+					state = 0;
+				}
+			}
+			break;
 
-			// mode 3: BW = 125 KHz, CR = 4/5, SF = 10.
-			case 3:  if( (config1 >> 3) == 0x01 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_10 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
+		// mode 4: BW = 500 KHz, CR = 4/5, SF = 12.
+		case 4:
+			if ((config1 >> 3) == 0x11)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_12)
+				{
+					state = 0;
+				}
+			}
+			break;
 
-			// mode 4: BW = 500 KHz, CR = 4/5, SF = 12.
-			case 4:  if( (config1 >> 3) == 0x11 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_12 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
+		// mode 5: BW = 250 KHz, CR = 4/5, SF = 10.
+		case 5:
+			if ((config1 >> 3) == 0x09)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_10)
+				{
+					state = 0;
+				}
+			}
+			break;
 
-			// mode 5: BW = 250 KHz, CR = 4/5, SF = 10.
-			case 5:  if( (config1 >> 3) == 0x09 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_10 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
+		// mode 6: BW = 500 KHz, CR = 4/5, SF = 11.
+		case 6:
+			if ((config1 >> 3) == 0x11)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_11)
+				{
+					state = 0;
+				}
+			}
+			break;
 
-			// mode 6: BW = 500 KHz, CR = 4/5, SF = 11.
-			case 6:  if( (config1 >> 3) == 0x11 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_11 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
+		// mode 7: BW = 250 KHz, CR = 4/5, SF = 9.
+		case 7:
+			if ((config1 >> 3) == 0x09)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_9)
+				{
+					state = 0;
+				}
+			}
+			break;
 
-			// mode 7: BW = 250 KHz, CR = 4/5, SF = 9.
-			case 7:  if( (config1 >> 3) == 0x09 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_9 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
+		// mode 8: BW = 500 KHz, CR = 4/5, SF = 9.
+		case 8:
+			if ((config1 >> 3) == 0x11)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_9)
+				{
+					state = 0;
+				}
+			}
+			break;
 
-			// mode 8: BW = 500 KHz, CR = 4/5, SF = 9.
-			case 8:  if ((config1 >> 3) == 0x11)
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_9 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
+		// mode 9: BW = 500 KHz, CR = 4/5, SF = 8.
+		case 9:
+			if ((config1 >> 3) == 0x11)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_8)
+				{
+					state = 0;
+				}
+			}
+			break;
 
-			// mode 9: BW = 500 KHz, CR = 4/5, SF = 8.
-			case 9:  if( (config1 >> 3) == 0x11 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_8 )
-							{
-							state = 0;
-							}
-						}
- 					 break;
-
-			// mode 10: BW = 500 KHz, CR = 4/5, SF = 7.
-			case 10: if( (config1 >> 3) == 0x11 )
-						{  config2 = readRegister(REG_MODEM_CONFIG2);
-						if( (config2 >> 4) == SF_7 )
-							{
-							state = 0;
-							}
-						}
-		}// end switch
+		// mode 10: BW = 500 KHz, CR = 4/5, SF = 7.
+		case 10:
+			if ((config1 >> 3) == 0x11)
+			{
+				config2 = readRegister(REG_MODEM_CONFIG2);
+				if ((config2 >> 4) == SF_7)
+				{
+					state = 0;
+				}
+			}
+		} // end switch
 	}
-	
-	#if (SX1272_debug_mode > 1)
-	if( state == 0 )
+
+#if (SX1272_debug_mode > 1)
+	if (state == 0)
 	{
 		my_printf(F("## Mode "));
 		my_printf(mode, DEC);
@@ -657,11 +674,11 @@ int8_t sx1272_INSAT::setMode(uint8_t mode)
 		my_printf(mode, DEC);
 		my_printf(F(". **"));
 	}
-	#endif
-	
+#endif
+
 	// Getting back to previous status
-	writeRegister(REG_OP_MODE, st0);	
-	
+	writeRegister(REG_OP_MODE, st0);
+
 	return state;
 }
 
@@ -672,17 +689,17 @@ int8_t sx1272_INSAT::setMode(uint8_t mode)
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t	sx1272_INSAT::getHeader()
+uint8_t sx1272_INSAT::getHeader()
 {
 	int8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getHeader'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getHeader'"));
+#endif
 
 	// take out bit 2 from REG_MODEM_CONFIG1 indicates ImplicitHeaderModeOn
-	if( bitRead(readRegister(REG_MODEM_CONFIG1), 2) == 0 )
+	if (bitRead(readRegister(REG_MODEM_CONFIG1), 2) == 0)
 	{ // explicit header mode (ON)
 		_header = HEADER_ON;
 		state = 1;
@@ -695,27 +712,27 @@ uint8_t	sx1272_INSAT::getHeader()
 
 	state = 0;
 
-	if( _modem == FSK )
+	if (_modem == FSK)
 	{ // header is not available in FSK mode
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Notice that FSK mode packets hasn't header ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Notice that FSK mode packets hasn't header ##"));
+		my_printf();
+#endif
 	}
 	else
 	{ // header in LoRa mode
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Header is "));
-			if( _header == HEADER_ON )
-			{
-				my_printf(F("in explicit header mode ##"));
-			}
-			else
-			{
-				my_printf(F("in implicit header mode ##"));
-			}
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Header is "));
+		if (_header == HEADER_ON)
+		{
+			my_printf(F("in explicit header mode ##"));
+		}
+		else
+		{
+			my_printf(F("in implicit header mode ##"));
+		}
+		my_printf();
+#endif
 	}
 	return state;
 }
@@ -728,58 +745,58 @@ uint8_t	sx1272_INSAT::getHeader()
    state = 0  --> The command has been executed with no errors
    state = -1 --> Forbidden command for this protocol
 */
-int8_t	sx1272_INSAT::setHeaderON()
+int8_t sx1272_INSAT::setHeaderON()
 {
-  int8_t state = 2;
-  uint8_t config1;
+	int8_t state = 2;
+	uint8_t config1;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'setHeaderON'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setHeaderON'"));
+#endif
 
-  if( _modem == FSK )
-  {
-	  state = -1;		// header is not available in FSK mode
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## FSK mode packets hasn't header ##"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	config1 = readRegister(REG_MODEM_CONFIG1);	// Save config1 to modify only the header bit
-	if( _spreadingFactor == 6 )
+	if (_modem == FSK)
 	{
-		state = -1;		// Mandatory headerOFF with SF = 6
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Mandatory implicit header mode with spreading factor = 6 ##"));
-		#endif
+		state = -1; // header is not available in FSK mode
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## FSK mode packets hasn't header ##"));
+		my_printf();
+#endif
 	}
 	else
 	{
-		config1 = config1 & 0xFB;			// clears bit 2 from config1 = headerON
-		writeRegister(REG_MODEM_CONFIG1,config1);	// Update config1
-	}
-	if( _spreadingFactor != 6 )
-	{ // checking headerON taking out bit 2 from REG_MODEM_CONFIG1
-		config1 = readRegister(REG_MODEM_CONFIG1);
-		if( bitRead(config1, 2) == HEADER_ON )
+		config1 = readRegister(REG_MODEM_CONFIG1); // Save config1 to modify only the header bit
+		if (_spreadingFactor == 6)
 		{
-			state = 0;
-			_header = HEADER_ON;
-			#if (SX1272_debug_mode > 1)
-				my_printf(F("## Header has been activated ##"));
-				my_printf();
-			#endif
+			state = -1; // Mandatory headerOFF with SF = 6
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## Mandatory implicit header mode with spreading factor = 6 ##"));
+#endif
 		}
 		else
 		{
-			state = 1;
+			config1 = config1 & 0xFB;				   // clears bit 2 from config1 = headerON
+			writeRegister(REG_MODEM_CONFIG1, config1); // Update config1
+		}
+		if (_spreadingFactor != 6)
+		{ // checking headerON taking out bit 2 from REG_MODEM_CONFIG1
+			config1 = readRegister(REG_MODEM_CONFIG1);
+			if (bitRead(config1, 2) == HEADER_ON)
+			{
+				state = 0;
+				_header = HEADER_ON;
+#if (SX1272_debug_mode > 1)
+				my_printf(F("## Header has been activated ##"));
+				my_printf();
+#endif
+			}
+			else
+			{
+				state = 1;
+			}
 		}
 	}
-  }
-  return state;
+	return state;
 }
 
 /*
@@ -790,55 +807,55 @@ int8_t	sx1272_INSAT::setHeaderON()
    state = 0  --> The command has been executed with no errors
    state = -1 --> Forbidden command for this protocol
 */
-int8_t	sx1272_INSAT::setHeaderOFF()
+int8_t sx1272_INSAT::setHeaderOFF()
 {
 	uint8_t state = 2;
 	uint8_t config1;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setHeaderOFF'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setHeaderOFF'"));
+#endif
 
-	if( _modem == FSK )
-	{ 
+	if (_modem == FSK)
+	{
 		// header is not available in FSK mode
 		state = -1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Notice that FSK mode packets hasn't header ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Notice that FSK mode packets hasn't header ##"));
+		my_printf();
+#endif
 	}
 	else
 	{
 		// Read config1 to modify only the header bit
-		config1 = readRegister(REG_MODEM_CONFIG1);	
-		
+		config1 = readRegister(REG_MODEM_CONFIG1);
+
 		// sets bit 2 from REG_MODEM_CONFIG1 = headerOFF
 		config1 = config1 | 0x04;
-		// Update config1		
-		writeRegister(REG_MODEM_CONFIG1,config1);		
+		// Update config1
+		writeRegister(REG_MODEM_CONFIG1, config1);
 
 		// check register
 		config1 = readRegister(REG_MODEM_CONFIG1);
-		if( bitRead(config1, 2) == HEADER_OFF )
-		{ 
+		if (bitRead(config1, 2) == HEADER_OFF)
+		{
 			// checking headerOFF taking out bit 2 from REG_MODEM_CONFIG1
 			state = 0;
 			_header = HEADER_OFF;
 
-			#if (SX1272_debug_mode > 1)
-			    my_printf(F("## Header has been desactivated ##"));
-			    my_printf();
-			#endif
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## Header has been desactivated ##"));
+			my_printf();
+#endif
 		}
 		else
 		{
 			state = 1;
-			#if (SX1272_debug_mode > 1)
-				my_printf(F("** Header hasn't been desactivated ##"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 1)
+			my_printf(F("** Header hasn't been desactivated ##"));
+			my_printf();
+#endif
 		}
 	}
 	return state;
@@ -851,37 +868,37 @@ int8_t	sx1272_INSAT::setHeaderOFF()
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t	sx1272_INSAT::getCRC()
+uint8_t sx1272_INSAT::getCRC()
 {
 	int8_t state = 2;
 	uint8_t value;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getCRC'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getCRC'"));
+#endif
 
-	if( _modem == LORA )
+	if (_modem == LORA)
 	{ // LoRa mode
 
 		// take out bit 1 from REG_MODEM_CONFIG1 indicates RxPayloadCrcOn
 		value = readRegister(REG_MODEM_CONFIG1);
-		if( bitRead(value, 1) == CRC_OFF )
+		if (bitRead(value, 1) == CRC_OFF)
 		{ // CRCoff
 			_CRC = CRC_OFF;
-			#if (SX1272_debug_mode > 1)
-				my_printf(F("## CRC is desactivated ##"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## CRC is desactivated ##"));
+			my_printf();
+#endif
 			state = 0;
 		}
 		else
 		{ // CRCon
 			_CRC = CRC_ON;
-			#if (SX1272_debug_mode > 1)
-				my_printf(F("## CRC is activated ##"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## CRC is activated ##"));
+			my_printf();
+#endif
 			state = 0;
 		}
 	}
@@ -890,32 +907,32 @@ uint8_t	sx1272_INSAT::getCRC()
 
 		// take out bit 2 from REG_PACKET_CONFIG1 indicates CrcOn
 		value = readRegister(REG_PACKET_CONFIG1);
-		if( bitRead(value, 4) == CRC_OFF )
+		if (bitRead(value, 4) == CRC_OFF)
 		{ // CRCoff
 			_CRC = CRC_OFF;
-			#if (SX1272_debug_mode > 1)
-				my_printf(F("## CRC is desactivated ##"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## CRC is desactivated ##"));
+			my_printf();
+#endif
 			state = 0;
 		}
 		else
 		{ // CRCon
 			_CRC = CRC_ON;
-			#if (SX1272_debug_mode > 1)
-				my_printf(F("## CRC is activated ##"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## CRC is activated ##"));
+			my_printf();
+#endif
 			state = 0;
 		}
 	}
-	if( state != 0 )
+	if (state != 0)
 	{
 		state = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** There has been an error while getting configured CRC **"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** There has been an error while getting configured CRC **"));
+		my_printf();
+#endif
 	}
 	return state;
 }
@@ -927,63 +944,63 @@ uint8_t	sx1272_INSAT::getCRC()
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t	sx1272_INSAT::setCRC_ON()
+uint8_t sx1272_INSAT::setCRC_ON()
 {
-  uint8_t state = 2;
-  uint8_t config1;
+	uint8_t state = 2;
+	uint8_t config1;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'setCRC_ON'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setCRC_ON'"));
+#endif
 
-  if( _modem == LORA )
-  { // LORA mode
-	config1 = readRegister(REG_MODEM_CONFIG1);	// Save config1 to modify only the CRC bit
-	config1 = config1 | 0x02;				// sets bit 1 from REG_MODEM_CONFIG1 = CRC_ON
-	writeRegister(REG_MODEM_CONFIG1,config1);
+	if (_modem == LORA)
+	{											   // LORA mode
+		config1 = readRegister(REG_MODEM_CONFIG1); // Save config1 to modify only the CRC bit
+		config1 = config1 | 0x02;				   // sets bit 1 from REG_MODEM_CONFIG1 = CRC_ON
+		writeRegister(REG_MODEM_CONFIG1, config1);
 
-	state = 1;
+		state = 1;
 
-	config1 = readRegister(REG_MODEM_CONFIG1);
-	if( bitRead(config1, 1) == CRC_ON )
-	{ // take out bit 1 from REG_MODEM_CONFIG1 indicates RxPayloadCrcOn
-		state = 0;
-		_CRC = CRC_ON;
-		#if (SX1272_debug_mode > 1)
+		config1 = readRegister(REG_MODEM_CONFIG1);
+		if (bitRead(config1, 1) == CRC_ON)
+		{ // take out bit 1 from REG_MODEM_CONFIG1 indicates RxPayloadCrcOn
+			state = 0;
+			_CRC = CRC_ON;
+#if (SX1272_debug_mode > 1)
 			my_printf(F("## CRC has been activated ##"));
 			my_printf();
-		#endif
+#endif
+		}
 	}
-  }
-  else
-  { // FSK mode
-	config1 = readRegister(REG_PACKET_CONFIG1);	// Save config1 to modify only the CRC bit
-	config1 = config1 | 0x10;				// set bit 4 and 3 from REG_MODEM_CONFIG1 = CRC_ON
-	writeRegister(REG_PACKET_CONFIG1,config1);
+	else
+	{												// FSK mode
+		config1 = readRegister(REG_PACKET_CONFIG1); // Save config1 to modify only the CRC bit
+		config1 = config1 | 0x10;					// set bit 4 and 3 from REG_MODEM_CONFIG1 = CRC_ON
+		writeRegister(REG_PACKET_CONFIG1, config1);
 
-	state = 1;
+		state = 1;
 
-	config1 = readRegister(REG_PACKET_CONFIG1);
-	if( bitRead(config1, 4) == CRC_ON )
-	{ // take out bit 4 from REG_PACKET_CONFIG1 indicates CrcOn
-		state = 0;
-		_CRC = CRC_ON;
-		#if (SX1272_debug_mode > 1)
+		config1 = readRegister(REG_PACKET_CONFIG1);
+		if (bitRead(config1, 4) == CRC_ON)
+		{ // take out bit 4 from REG_PACKET_CONFIG1 indicates CrcOn
+			state = 0;
+			_CRC = CRC_ON;
+#if (SX1272_debug_mode > 1)
 			my_printf(F("## CRC has been activated ##"));
 			my_printf();
-		#endif
+#endif
+		}
 	}
-  }
-  if( state != 0 )
-  {
-	  state = 1;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("** There has been an error while setting CRC ON **"));
-		  my_printf();
-	  #endif
-  }
-  return state;
+	if (state != 0)
+	{
+		state = 1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** There has been an error while setting CRC ON **"));
+		my_printf();
+#endif
+	}
+	return state;
 }
 
 /*
@@ -993,59 +1010,59 @@ uint8_t	sx1272_INSAT::setCRC_ON()
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t	sx1272_INSAT::setCRC_OFF()
+uint8_t sx1272_INSAT::setCRC_OFF()
 {
-  int8_t state = 2;
-  uint8_t config1;
+	int8_t state = 2;
+	uint8_t config1;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'setCRC_OFF'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setCRC_OFF'"));
+#endif
 
-  if( _modem == LORA )
-  { // LORA mode
-  	config1 = readRegister(REG_MODEM_CONFIG1);	// Save config1 to modify only the CRC bit
-	config1 = config1 & 0xFD;				// clears bit 1 from config1 = CRC_OFF
-	writeRegister(REG_MODEM_CONFIG1,config1);
+	if (_modem == LORA)
+	{											   // LORA mode
+		config1 = readRegister(REG_MODEM_CONFIG1); // Save config1 to modify only the CRC bit
+		config1 = config1 & 0xFD;				   // clears bit 1 from config1 = CRC_OFF
+		writeRegister(REG_MODEM_CONFIG1, config1);
 
-	config1 = readRegister(REG_MODEM_CONFIG1);
-	if( (bitRead(config1, 1)) == CRC_OFF )
-	{ // take out bit 1 from REG_MODEM_CONFIG1 indicates RxPayloadCrcOn
-	  state = 0;
-	  _CRC = CRC_OFF;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## CRC has been desactivated ##"));
-		  my_printf();
-	  #endif
+		config1 = readRegister(REG_MODEM_CONFIG1);
+		if ((bitRead(config1, 1)) == CRC_OFF)
+		{ // take out bit 1 from REG_MODEM_CONFIG1 indicates RxPayloadCrcOn
+			state = 0;
+			_CRC = CRC_OFF;
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## CRC has been desactivated ##"));
+			my_printf();
+#endif
+		}
 	}
-  }
-  else
-  { // FSK mode
-	config1 = readRegister(REG_PACKET_CONFIG1);	// Save config1 to modify only the CRC bit
-	config1 = config1 & 0xEF;				// clears bit 4 from config1 = CRC_OFF
-	writeRegister(REG_PACKET_CONFIG1,config1);
+	else
+	{												// FSK mode
+		config1 = readRegister(REG_PACKET_CONFIG1); // Save config1 to modify only the CRC bit
+		config1 = config1 & 0xEF;					// clears bit 4 from config1 = CRC_OFF
+		writeRegister(REG_PACKET_CONFIG1, config1);
 
-	config1 = readRegister(REG_PACKET_CONFIG1);
-	if( bitRead(config1, 4) == CRC_OFF )
-	{ // take out bit 4 from REG_PACKET_CONFIG1 indicates RxPayloadCrcOn
-		state = 0;
-		_CRC = CRC_OFF;
-		#if (SX1272_debug_mode > 1)
-		    my_printf(F("## CRC has been desactivated ##"));
-		    my_printf();
-	    #endif
+		config1 = readRegister(REG_PACKET_CONFIG1);
+		if (bitRead(config1, 4) == CRC_OFF)
+		{ // take out bit 4 from REG_PACKET_CONFIG1 indicates RxPayloadCrcOn
+			state = 0;
+			_CRC = CRC_OFF;
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## CRC has been desactivated ##"));
+			my_printf();
+#endif
+		}
 	}
-  }
-  if( state != 0 )
-  {
-	  state = 1;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("** There has been an error while setting CRC OFF **"));
-		  my_printf();
-	  #endif
-  }
-  return state;
+	if (state != 0)
+	{
+		state = 1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** There has been an error while setting CRC OFF **"));
+		my_printf();
+#endif
+	}
+	return state;
 }
 
 /*
@@ -1055,31 +1072,33 @@ uint8_t	sx1272_INSAT::setCRC_OFF()
  Parameters:
    spr: spreading factor value to check.
 */
-bool	sx1272_INSAT::isSF(uint8_t spr)
+bool sx1272_INSAT::isSF(uint8_t spr)
 {
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'isSF'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'isSF'"));
+#endif
 
-  // Checking available values for _spreadingFactor
-  switch(spr)
-  {
-	  case SF_6:
-	  case SF_7:
-	  case SF_8:
-	  case SF_9:
-	  case SF_10:
-	  case SF_11:
-	  case SF_12:	return true;
-					break;
+	// Checking available values for _spreadingFactor
+	switch (spr)
+	{
+	case SF_6:
+	case SF_7:
+	case SF_8:
+	case SF_9:
+	case SF_10:
+	case SF_11:
+	case SF_12:
+		return true;
+		break;
 
-	  default:		return false;
-  }
-  #if (SX1272_debug_mode > 1)
-	  my_printf(F("## Finished 'isSF' ##"));
-	  my_printf();
-  #endif
+	default:
+		return false;
+	}
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Finished 'isSF' ##"));
+	my_printf();
+#endif
 }
 
 /*
@@ -1090,43 +1109,43 @@ bool	sx1272_INSAT::isSF(uint8_t spr)
    state = 0  --> The command has been executed with no errors
    state = -1 --> Forbidden command for this protocol
 */
-int8_t	sx1272_INSAT::getSF()
+int8_t sx1272_INSAT::getSF()
 {
-  int8_t state = 2;
-  uint8_t config2;
+	int8_t state = 2;
+	uint8_t config2;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'getSF'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getSF'"));
+#endif
 
-  if( _modem == FSK )
-  {
-	  state = -1;		// SF is not available in FSK mode
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("** FSK mode hasn't spreading factor **"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	// take out bits 7-4 from REG_MODEM_CONFIG2 indicates _spreadingFactor
-	config2 = (readRegister(REG_MODEM_CONFIG2)) >> 4;
-	_spreadingFactor = config2;
-	state = 1;
-
-	if( (config2 == _spreadingFactor) && isSF(_spreadingFactor) )
+	if (_modem == FSK)
 	{
-		state = 0;
-		#if (SX1272_debug_mode > 1)
+		state = -1; // SF is not available in FSK mode
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** FSK mode hasn't spreading factor **"));
+		my_printf();
+#endif
+	}
+	else
+	{
+		// take out bits 7-4 from REG_MODEM_CONFIG2 indicates _spreadingFactor
+		config2 = (readRegister(REG_MODEM_CONFIG2)) >> 4;
+		_spreadingFactor = config2;
+		state = 1;
+
+		if ((config2 == _spreadingFactor) && isSF(_spreadingFactor))
+		{
+			state = 0;
+#if (SX1272_debug_mode > 1)
 			my_printf(F("## Spreading factor is "));
-			my_printf(_spreadingFactor,HEX);
+			my_printf(_spreadingFactor, HEX);
 			my_printf(F(" ##"));
 			my_printf();
-		#endif
+#endif
+		}
 	}
-  }
-  return state;
+	return state;
 }
 
 /*
@@ -1138,195 +1157,194 @@ int8_t	sx1272_INSAT::getSF()
  Parameters:
    spr: spreading factor value to set in LoRa modem configuration.
 */
-uint8_t	sx1272_INSAT::setSF(uint8_t spr)
+uint8_t sx1272_INSAT::setSF(uint8_t spr)
 {
 	uint8_t st0;
 	int8_t state = 2;
 	uint8_t config1;
 	uint8_t config2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setSF'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setSF'"));
+#endif
 
-	st0 = readRegister(REG_OP_MODE);	// Save the previous status
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
 
-	if( _modem == FSK )
+	if (_modem == FSK)
 	{
-		/// FSK mode
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Notice that FSK hasn't Spreading Factor parameter, "));
-			my_printf(F("so you are configuring it in LoRa mode ##"));
-		#endif
-		state = setLORA();				// Setting LoRa mode
+/// FSK mode
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Notice that FSK hasn't Spreading Factor parameter, "));
+		my_printf(F("so you are configuring it in LoRa mode ##"));
+#endif
+		state = setLORA(); // Setting LoRa mode
 	}
 	else
-	{ 
+	{
 		/// LoRa mode
 		// LoRa standby mode
-		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	
-		
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
+
 		// Read config1 to modify only the LowDataRateOptimize
-		config1 = (readRegister(REG_MODEM_CONFIG1));	
+		config1 = (readRegister(REG_MODEM_CONFIG1));
 		// Read config2 to modify SF value (bits 7-4)
-		config2 = (readRegister(REG_MODEM_CONFIG2));	
-		
-		switch(spr)
+		config2 = (readRegister(REG_MODEM_CONFIG2));
+
+		switch (spr)
 		{
-			case SF_6: 	
-					config2 = config2 & 0x6F;	// clears bits 7 & 4 from REG_MODEM_CONFIG2
-					config2 = config2 | 0x60;	// sets bits 6 & 5 from REG_MODEM_CONFIG2
-					break;
-			case SF_7: 
-					config2 = config2 & 0x7F;	// clears bits 7 from REG_MODEM_CONFIG2
-					config2 = config2 | 0x70;	// sets bits 6, 5 & 4
-					break;
-					
-			case SF_8: 	
-					config2 = config2 & 0x8F;	// clears bits 6, 5 & 4 from REG_MODEM_CONFIG2
-					config2 = config2 | 0x80;	// sets bit 7 from REG_MODEM_CONFIG2
-					break;
-					
-			case SF_9: 	
-					config2 = config2 & 0x9F;	// clears bits 6, 5 & 4 from REG_MODEM_CONFIG2
-					config2 = config2 | 0x90;	// sets bits 7 & 4 from REG_MODEM_CONFIG2
-					break;
-					
-			case SF_10:	config2 = config2 & 0xAF;	// clears bits 6 & 4 from REG_MODEM_CONFIG2
-					config2 = config2 | 0xA0;	// sets bits 7 & 5 from REG_MODEM_CONFIG2
-					break;
-					
-			case SF_11:	
-					config2 = config2 & 0xBF;	// clears bit 6 from REG_MODEM_CONFIG2
-					config2 = config2 | 0xB0;	// sets bits 7, 5 & 4 from REG_MODEM_CONFIG2
-					getBW();
-					//if( _bandwidth == BW_125 )
-					{ // LowDataRateOptimize (Mandatory with SF_11 if BW_125)
-						config1 = config1 | 0x01;
-					}
-					break;
-					
-			case SF_12: 
-					config2 = config2 & 0xCF;	// clears bits 5 & 4 from REG_MODEM_CONFIG2
-					config2 = config2 | 0xC0;	// sets bits 7 & 6 from REG_MODEM_CONFIG2
-					//if( _bandwidth == BW_125 )
-					{ // LowDataRateOptimize (Mandatory with SF_12 if BW_125)
-						config1 = config1 | 0x01;
-					}
-					break;
+		case SF_6:
+			config2 = config2 & 0x6F; // clears bits 7 & 4 from REG_MODEM_CONFIG2
+			config2 = config2 | 0x60; // sets bits 6 & 5 from REG_MODEM_CONFIG2
+			break;
+		case SF_7:
+			config2 = config2 & 0x7F; // clears bits 7 from REG_MODEM_CONFIG2
+			config2 = config2 | 0x70; // sets bits 6, 5 & 4
+			break;
+
+		case SF_8:
+			config2 = config2 & 0x8F; // clears bits 6, 5 & 4 from REG_MODEM_CONFIG2
+			config2 = config2 | 0x80; // sets bit 7 from REG_MODEM_CONFIG2
+			break;
+
+		case SF_9:
+			config2 = config2 & 0x9F; // clears bits 6, 5 & 4 from REG_MODEM_CONFIG2
+			config2 = config2 | 0x90; // sets bits 7 & 4 from REG_MODEM_CONFIG2
+			break;
+
+		case SF_10:
+			config2 = config2 & 0xAF; // clears bits 6 & 4 from REG_MODEM_CONFIG2
+			config2 = config2 | 0xA0; // sets bits 7 & 5 from REG_MODEM_CONFIG2
+			break;
+
+		case SF_11:
+			config2 = config2 & 0xBF; // clears bit 6 from REG_MODEM_CONFIG2
+			config2 = config2 | 0xB0; // sets bits 7, 5 & 4 from REG_MODEM_CONFIG2
+			getBW();
+			//if( _bandwidth == BW_125 )
+			{ // LowDataRateOptimize (Mandatory with SF_11 if BW_125)
+				config1 = config1 | 0x01;
+			}
+			break;
+
+		case SF_12:
+			config2 = config2 & 0xCF; // clears bits 5 & 4 from REG_MODEM_CONFIG2
+			config2 = config2 | 0xC0; // sets bits 7 & 6 from REG_MODEM_CONFIG2
+			//if( _bandwidth == BW_125 )
+			{ // LowDataRateOptimize (Mandatory with SF_12 if BW_125)
+				config1 = config1 | 0x01;
+			}
+			break;
+		}
+
+		// Check if it is neccesary to set special settings for SF=6
+		if (spr == SF_6)
+		{
+			// Mandatory headerOFF with SF = 6 (Implicit mode)
+			setHeaderOFF();
+
+			// Set the bit field DetectionOptimize of
+			// register RegLoRaDetectOptimize to value "0b101".
+			writeRegister(REG_DETECT_OPTIMIZE, 0x05);
+
+			// Write 0x0C in the register RegDetectionThreshold.
+			writeRegister(REG_DETECTION_THRESHOLD, 0x0C);
+		}
+		else
+		{
+			// LoRa detection Optimize: 0x03 --> SF7 to SF12
+			writeRegister(REG_DETECT_OPTIMIZE, 0x03);
+
+			// LoRa detection threshold: 0x0A --> SF7 to SF12
+			writeRegister(REG_DETECTION_THRESHOLD, 0x0A);
+		}
+
+		// sets bit 2-0 (AgcAutoOn and SymbTimout) for any SF value
+		config2 = config2 | 0x07;
+
+		// Update 'config1' and 'config2'
+		writeRegister(REG_MODEM_CONFIG1, config1);
+		writeRegister(REG_MODEM_CONFIG2, config2);
+
+		// Read 'config1' and 'config2' to check update
+		config1 = (readRegister(REG_MODEM_CONFIG1));
+		config2 = (readRegister(REG_MODEM_CONFIG2));
+
+		// (config2 >> 4) ---> take out bits 7-4 from REG_MODEM_CONFIG2 (=_spreadingFactor)
+		// bitRead(config1, 0) ---> take out bits 1 from config1 (=LowDataRateOptimize)
+		switch (spr)
+		{
+		case SF_6:
+			if (((config2 >> 4) == spr) && (bitRead(config2, 2) == 1) && (_header == HEADER_OFF))
+			{
+				state = 0;
+			}
+			break;
+		case SF_7:
+			if (((config2 >> 4) == 0x07) && (bitRead(config2, 2) == 1))
+			{
+				state = 0;
+			}
+			break;
+		case SF_8:
+			if (((config2 >> 4) == 0x08) && (bitRead(config2, 2) == 1))
+			{
+				state = 0;
+			}
+			break;
+		case SF_9:
+			if (((config2 >> 4) == 0x09) && (bitRead(config2, 2) == 1))
+			{
+				state = 0;
+			}
+			break;
+		case SF_10:
+			if (((config2 >> 4) == 0x0A) && (bitRead(config2, 2) == 1))
+			{
+				state = 0;
+			}
+			break;
+		case SF_11:
+			if (((config2 >> 4) == 0x0B) && (bitRead(config2, 2) == 1) && (bitRead(config1, 0) == 1))
+			{
+				state = 0;
+			}
+			break;
+		case SF_12:
+			if (((config2 >> 4) == 0x0C) && (bitRead(config2, 2) == 1) && (bitRead(config1, 0) == 1))
+			{
+				state = 0;
+			}
+			break;
+		default:
+			state = 1;
+		}
 	}
-	
-	// Check if it is neccesary to set special settings for SF=6
-	if( spr == SF_6 )
-	{		
-		// Mandatory headerOFF with SF = 6 (Implicit mode)
-		setHeaderOFF();	
-		
-		// Set the bit field DetectionOptimize of 
-		// register RegLoRaDetectOptimize to value "0b101".
-		writeRegister(REG_DETECT_OPTIMIZE, 0x05);
-		
-		// Write 0x0C in the register RegDetectionThreshold.						
-		writeRegister(REG_DETECTION_THRESHOLD, 0x0C);
+
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
+
+	if (isSF(spr))
+	{ // Checking available value for _spreadingFactor
+		state = 0;
+		_spreadingFactor = spr;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Spreading factor "));
+		my_printf(_spreadingFactor, DEC);
+		my_printf(F(" has been successfully set ##"));
+		my_printf();
+#endif
 	}
 	else
 	{
-		// LoRa detection Optimize: 0x03 --> SF7 to SF12
-		writeRegister(REG_DETECT_OPTIMIZE, 0x03);
-		
-		// LoRa detection threshold: 0x0A --> SF7 to SF12					
-		writeRegister(REG_DETECTION_THRESHOLD, 0x0A);		
+		if (state != 0)
+		{
+#if (SX1272_debug_mode > 1)
+			my_printf(F("** There has been an error while setting the spreading factor **"));
+			my_printf();
+#endif
+		}
 	}
-
-	// sets bit 2-0 (AgcAutoOn and SymbTimout) for any SF value
-	config2 = config2 | 0x07;
-
-	// Update 'config1' and 'config2'
-	writeRegister(REG_MODEM_CONFIG1, config1);		
-	writeRegister(REG_MODEM_CONFIG2, config2);		
-
-	// Read 'config1' and 'config2' to check update
-	config1 = (readRegister(REG_MODEM_CONFIG1));
-	config2 = (readRegister(REG_MODEM_CONFIG2));
-	
-	// (config2 >> 4) ---> take out bits 7-4 from REG_MODEM_CONFIG2 (=_spreadingFactor)
-	// bitRead(config1, 0) ---> take out bits 1 from config1 (=LowDataRateOptimize)
-	switch(spr)
-	{
-		case SF_6:	if(		((config2 >> 4) == spr)
-						&& 	(bitRead(config2, 2) == 1)
-						&& 	(_header == HEADER_OFF))
-					{
-						state = 0;
-					}
-					break;
-		case SF_7:	if(		((config2 >> 4) == 0x07)
-						 && (bitRead(config2, 2) == 1))
-					{
-						state = 0;
-					}
-					break;
-		case SF_8:	if(		((config2 >> 4) == 0x08)
-						 && (bitRead(config2, 2) == 1))
-					{
-						state = 0;
-					}
-					break;
-		case SF_9:	if(		((config2 >> 4) == 0x09)
-						 && (bitRead(config2, 2) == 1))
-					{
-						state = 0;
-					}
-					break;
-		case SF_10:	if(		((config2 >> 4) == 0x0A)
-						 && (bitRead(config2, 2) == 1))
-					{
-						state = 0;
-					}
-					break;
-		case SF_11:	if(		((config2 >> 4) == 0x0B)
-						 && (bitRead(config2, 2) == 1)
-						 && (bitRead(config1, 0) == 1))
-					{
-						state = 0;
-					}
-					break;
-		case SF_12:	if(		((config2 >> 4) == 0x0C)
-						 && (bitRead(config2, 2) == 1)
-						 && (bitRead(config1, 0) == 1))
-					{
-						state = 0;
-					}
-					break;
-		default:	state = 1;
-	}
-  }
-
-  writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
-
-  if( isSF(spr) )
-  { // Checking available value for _spreadingFactor
-		state = 0;
-		_spreadingFactor = spr;
-		#if (SX1272_debug_mode > 1)
-		    my_printf(F("## Spreading factor "));
-		    my_printf(_spreadingFactor, DEC);
-		    my_printf(F(" has been successfully set ##"));
-		    my_printf();
-		#endif
-  }
-  else
-  {
-	  if( state != 0 )
-	  {
-		  #if (SX1272_debug_mode > 1)
-		      my_printf(F("** There has been an error while setting the spreading factor **"));
-		      my_printf();
-		  #endif
-	  }
-  }
-  return state;
+	return state;
 }
 
 /*
@@ -1336,27 +1354,29 @@ uint8_t	sx1272_INSAT::setSF(uint8_t spr)
  Parameters:
    band: bandwidth value to check.
 */
-bool	sx1272_INSAT::isBW(uint16_t band)
+bool sx1272_INSAT::isBW(uint16_t band)
 {
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'isBW'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'isBW'"));
+#endif
 
-  // Checking available values for _bandwidth
-  switch(band)
-  {
-	  case BW_125:
-	  case BW_250:
-	  case BW_500:	return true;
-					break;
+	// Checking available values for _bandwidth
+	switch (band)
+	{
+	case BW_125:
+	case BW_250:
+	case BW_500:
+		return true;
+		break;
 
-	  default:		return false;
-  }
-  #if (SX1272_debug_mode > 1)
-	  my_printf(F("## Finished 'isBW' ##"));
-	  my_printf();
-  #endif
+	default:
+		return false;
+	}
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Finished 'isBW' ##"));
+	my_printf();
+#endif
 }
 
 /*
@@ -1367,50 +1387,50 @@ bool	sx1272_INSAT::isBW(uint16_t band)
    state = 0  --> The command has been executed with no errors
    state = -1 --> Forbidden command for this protocol
 */
-int8_t	sx1272_INSAT::getBW()
+int8_t sx1272_INSAT::getBW()
 {
-  uint8_t state = 2;
-  uint8_t config1;
+	uint8_t state = 2;
+	uint8_t config1;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'getBW'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getBW'"));
+#endif
 
-  if( _modem == FSK )
-  {
-	  state = -1;		// BW is not available in FSK mode
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("** FSK mode hasn't bandwidth **"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	  // take out bits 7-6 from REG_MODEM_CONFIG1 indicates _bandwidth
-	  config1 = (readRegister(REG_MODEM_CONFIG1)) >> 6;
-	  _bandwidth = config1;
+	if (_modem == FSK)
+	{
+		state = -1; // BW is not available in FSK mode
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** FSK mode hasn't bandwidth **"));
+		my_printf();
+#endif
+	}
+	else
+	{
+		// take out bits 7-6 from REG_MODEM_CONFIG1 indicates _bandwidth
+		config1 = (readRegister(REG_MODEM_CONFIG1)) >> 6;
+		_bandwidth = config1;
 
-	  if( (config1 == _bandwidth) && isBW(_bandwidth) )
-	  {
-		  state = 0;
-		  #if (SX1272_debug_mode > 1)
-			  my_printf(F("## Bandwidth is "));
-			  my_printf(_bandwidth,HEX);
-			  my_printf(F(" ##"));
-			  my_printf();
-		  #endif
-	  }
-	  else
-	  {
-		  state = 1;
-		  #if (SX1272_debug_mode > 1)
-			  my_printf(F("** There has been an error while getting bandwidth **"));
-			  my_printf();
-		  #endif
-	  }
-  }
-  return state;
+		if ((config1 == _bandwidth) && isBW(_bandwidth))
+		{
+			state = 0;
+#if (SX1272_debug_mode > 1)
+			my_printf(F("## Bandwidth is "));
+			my_printf(_bandwidth, HEX);
+			my_printf(F(" ##"));
+			my_printf();
+#endif
+		}
+		else
+		{
+			state = 1;
+#if (SX1272_debug_mode > 1)
+			my_printf(F("** There has been an error while getting bandwidth **"));
+			my_printf();
+#endif
+		}
+	}
+	return state;
 }
 
 /*
@@ -1422,116 +1442,122 @@ int8_t	sx1272_INSAT::getBW()
  Parameters:
    band: bandwith value to set in LoRa modem configuration.
 */
-int8_t	sx1272_INSAT::setBW(uint16_t band)
+int8_t sx1272_INSAT::setBW(uint16_t band)
 {
-  uint8_t st0;
-  int8_t state = 2;
-  uint8_t config1;
+	uint8_t st0;
+	int8_t state = 2;
+	uint8_t config1;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'setBW'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setBW'"));
+#endif
 
-  st0 = readRegister(REG_OP_MODE);	// Save the previous status
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
 
-  if( _modem == FSK )
-  {
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## Notice that FSK hasn't Bandwidth parameter, "));
-		  my_printf(F("so you are configuring it in LoRa mode ##"));
-	  #endif
-	  state = setLORA();
-  }
-  writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	// LoRa standby mode
-  config1 = (readRegister(REG_MODEM_CONFIG1));	// Save config1 to modify only the BW
-  switch(band)
-  {
-	  case BW_125:  config1 = config1 & 0x3F;	// clears bits 7 & 6 from REG_MODEM_CONFIG1
-					getSF();
-					if( _spreadingFactor == 11 )
-					{ // LowDataRateOptimize (Mandatory with BW_125 if SF_11)
-						config1 = config1 | 0x01;
-					}
-					if( _spreadingFactor == 12 )
-					{ // LowDataRateOptimize (Mandatory with BW_125 if SF_12)
-						config1 = config1 | 0x01;
-					}
-					break;
-	  case BW_250:  config1 = config1 & 0x7F;	// clears bit 7 from REG_MODEM_CONFIG1
-					config1 = config1 | 0x40;	// sets bit 6 from REG_MODEM_CONFIG1
-					break;
-	  case BW_500:  config1 = config1 & 0xBF;	//clears bit 6 from REG_MODEM_CONFIG1
-					config1 = config1 | 0x80;	//sets bit 7 from REG_MODEM_CONFIG1
-					break;
-  }
-  writeRegister(REG_MODEM_CONFIG1,config1);		// Update config1
+	if (_modem == FSK)
+	{
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Notice that FSK hasn't Bandwidth parameter, "));
+		my_printf(F("so you are configuring it in LoRa mode ##"));
+#endif
+		state = setLORA();
+	}
+	writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // LoRa standby mode
+	config1 = (readRegister(REG_MODEM_CONFIG1));   // Save config1 to modify only the BW
+	switch (band)
+	{
+	case BW_125:
+		config1 = config1 & 0x3F; // clears bits 7 & 6 from REG_MODEM_CONFIG1
+		getSF();
+		if (_spreadingFactor == 11)
+		{ // LowDataRateOptimize (Mandatory with BW_125 if SF_11)
+			config1 = config1 | 0x01;
+		}
+		if (_spreadingFactor == 12)
+		{ // LowDataRateOptimize (Mandatory with BW_125 if SF_12)
+			config1 = config1 | 0x01;
+		}
+		break;
+	case BW_250:
+		config1 = config1 & 0x7F; // clears bit 7 from REG_MODEM_CONFIG1
+		config1 = config1 | 0x40; // sets bit 6 from REG_MODEM_CONFIG1
+		break;
+	case BW_500:
+		config1 = config1 & 0xBF; //clears bit 6 from REG_MODEM_CONFIG1
+		config1 = config1 | 0x80; //sets bit 7 from REG_MODEM_CONFIG1
+		break;
+	}
+	writeRegister(REG_MODEM_CONFIG1, config1); // Update config1
 
-  config1 = (readRegister(REG_MODEM_CONFIG1));
-  // (config1 >> 6) ---> take out bits 7-6 from REG_MODEM_CONFIG1 (=_bandwidth)
-  switch(band)
-  {
-	   case BW_125: if( (config1 >> 6) == BW_125 )
-					{
-						state = 0;
-						if( _spreadingFactor == 11 )
-						{
-							if( bitRead(config1, 0) == 1 )
-							{ // LowDataRateOptimize
-								state = 0;
-							}
-							else
-							{
-								state = 1;
-							}
-						}
-						if( _spreadingFactor == 12 )
-						{
-							if( bitRead(config1, 0) == 1 )
-							{ // LowDataRateOptimize
-								state = 0;
-							}
-							else
-							{
-								state = 1;
-							}
-						}
-					}
-					break;
-	   case BW_250: if( (config1 >> 6) == BW_250 )
-					{
-						state = 0;
-					}
-					break;
-	   case BW_500: if( (config1 >> 6) == BW_500 )
-					{
-						state = 0;
-					}
-					break;
-  }
+	config1 = (readRegister(REG_MODEM_CONFIG1));
+	// (config1 >> 6) ---> take out bits 7-6 from REG_MODEM_CONFIG1 (=_bandwidth)
+	switch (band)
+	{
+	case BW_125:
+		if ((config1 >> 6) == BW_125)
+		{
+			state = 0;
+			if (_spreadingFactor == 11)
+			{
+				if (bitRead(config1, 0) == 1)
+				{ // LowDataRateOptimize
+					state = 0;
+				}
+				else
+				{
+					state = 1;
+				}
+			}
+			if (_spreadingFactor == 12)
+			{
+				if (bitRead(config1, 0) == 1)
+				{ // LowDataRateOptimize
+					state = 0;
+				}
+				else
+				{
+					state = 1;
+				}
+			}
+		}
+		break;
+	case BW_250:
+		if ((config1 >> 6) == BW_250)
+		{
+			state = 0;
+		}
+		break;
+	case BW_500:
+		if ((config1 >> 6) == BW_500)
+		{
+			state = 0;
+		}
+		break;
+	}
 
-  if( not isBW(band) )
-  {
-	  state = 1;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("** Bandwidth "));
-		  my_printf(band,HEX);
-		  my_printf(F(" is not a correct value **"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	  _bandwidth = band;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## Bandwidth "));
-		  my_printf(band,HEX);
-		  my_printf(F(" has been successfully set ##"));
-		  my_printf();
-	  #endif
-  }
-  writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
-  return state;
+	if (not isBW(band))
+	{
+		state = 1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Bandwidth "));
+		my_printf(band, HEX);
+		my_printf(F(" is not a correct value **"));
+		my_printf();
+#endif
+	}
+	else
+	{
+		_bandwidth = band;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Bandwidth "));
+		my_printf(band, HEX);
+		my_printf(F(" has been successfully set ##"));
+		my_printf();
+#endif
+	}
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
+	return state;
 }
 
 /*
@@ -1541,28 +1567,30 @@ int8_t	sx1272_INSAT::setBW(uint16_t band)
  Parameters:
    cod: coding rate value to check.
 */
-bool	sx1272_INSAT::isCR(uint8_t cod)
+bool sx1272_INSAT::isCR(uint8_t cod)
 {
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'isCR'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'isCR'"));
+#endif
 
-  // Checking available values for _codingRate
-  switch(cod)
-  {
-	  case CR_5:
-	  case CR_6:
-	  case CR_7:
-	  case CR_8:	return true;
-					break;
+	// Checking available values for _codingRate
+	switch (cod)
+	{
+	case CR_5:
+	case CR_6:
+	case CR_7:
+	case CR_8:
+		return true;
+		break;
 
-	  default:		return false;
-  }
-  #if (SX1272_debug_mode > 1)
-	  my_printf(F("## Finished 'isCR' ##"));
-	  my_printf();
-  #endif
+	default:
+		return false;
+	}
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Finished 'isCR' ##"));
+	my_printf();
+#endif
 }
 
 /*
@@ -1573,44 +1601,44 @@ bool	sx1272_INSAT::isCR(uint8_t cod)
    state = 0  --> The command has been executed with no errors
    state = -1 --> Forbidden command for this protocol
 */
-int8_t	sx1272_INSAT::getCR()
+int8_t sx1272_INSAT::getCR()
 {
-  int8_t state = 2;
-  uint8_t config1;
+	int8_t state = 2;
+	uint8_t config1;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'getCR'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getCR'"));
+#endif
 
-  if( _modem == FSK )
-  {
-	  state = -1;		// CR is not available in FSK mode
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("** FSK mode hasn't coding rate **"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	// take out bits 7-3 from REG_MODEM_CONFIG1 indicates _bandwidth & _codingRate
-	config1 = (readRegister(REG_MODEM_CONFIG1)) >> 3;
-	config1 = config1 & 0x07;	// clears bits 7-5 ---> clears _bandwidth
-	_codingRate = config1;
-	state = 1;
-
-	if( (config1 == _codingRate) && isCR(_codingRate) )
+	if (_modem == FSK)
 	{
-		state = 0;
-		#if (SX1272_debug_mode > 1)
+		state = -1; // CR is not available in FSK mode
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** FSK mode hasn't coding rate **"));
+		my_printf();
+#endif
+	}
+	else
+	{
+		// take out bits 7-3 from REG_MODEM_CONFIG1 indicates _bandwidth & _codingRate
+		config1 = (readRegister(REG_MODEM_CONFIG1)) >> 3;
+		config1 = config1 & 0x07; // clears bits 7-5 ---> clears _bandwidth
+		_codingRate = config1;
+		state = 1;
+
+		if ((config1 == _codingRate) && isCR(_codingRate))
+		{
+			state = 0;
+#if (SX1272_debug_mode > 1)
 			my_printf(F("## Coding rate is "));
-			my_printf(_codingRate,HEX);
+			my_printf(_codingRate, HEX);
 			my_printf(F(" ##"));
 			my_printf();
-		#endif
+#endif
+		}
 	}
-  }
-  return state;
+	return state;
 }
 
 /*
@@ -1623,96 +1651,104 @@ int8_t	sx1272_INSAT::getCR()
  Parameters:
    cod: coding rate value to set in LoRa modem configuration.
 */
-int8_t	sx1272_INSAT::setCR(uint8_t cod)
+int8_t sx1272_INSAT::setCR(uint8_t cod)
 {
-  uint8_t st0;
-  int8_t state = 2;
-  uint8_t config1;
+	uint8_t st0;
+	int8_t state = 2;
+	uint8_t config1;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'setCR'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setCR'"));
+#endif
 
-  st0 = readRegister(REG_OP_MODE);		// Save the previous status
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
 
-  if( _modem == FSK )
-  {
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## Notice that FSK hasn't Coding Rate parameter, "));
-		  my_printf(F("so you are configuring it in LoRa mode ##"));
-	  #endif
-	  state = setLORA();
-  }
-  else
-  {
-	  writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);		// Set Standby mode to write in registers
+	if (_modem == FSK)
+	{
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Notice that FSK hasn't Coding Rate parameter, "));
+		my_printf(F("so you are configuring it in LoRa mode ##"));
+#endif
+		state = setLORA();
+	}
+	else
+	{
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // Set Standby mode to write in registers
 
-	  config1 = readRegister(REG_MODEM_CONFIG1);	// Save config1 to modify only the CR
-	  switch(cod)
-	  {
-		 case CR_5: config1 = config1 & 0xCF;	// clears bits 5 & 4 from REG_MODEM_CONFIG1
-					config1 = config1 | 0x08;	// sets bit 3 from REG_MODEM_CONFIG1
-					break;
-		 case CR_6: config1 = config1 & 0xD7;	// clears bits 5 & 3 from REG_MODEM_CONFIG1
-					config1 = config1 | 0x10;	// sets bit 4 from REG_MODEM_CONFIG1
-					break;
-		 case CR_7: config1 = config1 & 0xDF;	// clears bit 5 from REG_MODEM_CONFIG1
-					config1 = config1 | 0x18;	// sets bits 4 & 3 from REG_MODEM_CONFIG1
-					break;
-		 case CR_8: config1 = config1 & 0xE7;	// clears bits 4 & 3 from REG_MODEM_CONFIG1
-					config1 = config1 | 0x20;	// sets bit 5 from REG_MODEM_CONFIG1
-					break;
-	  }
-	  writeRegister(REG_MODEM_CONFIG1, config1);		// Update config1
+		config1 = readRegister(REG_MODEM_CONFIG1); // Save config1 to modify only the CR
+		switch (cod)
+		{
+		case CR_5:
+			config1 = config1 & 0xCF; // clears bits 5 & 4 from REG_MODEM_CONFIG1
+			config1 = config1 | 0x08; // sets bit 3 from REG_MODEM_CONFIG1
+			break;
+		case CR_6:
+			config1 = config1 & 0xD7; // clears bits 5 & 3 from REG_MODEM_CONFIG1
+			config1 = config1 | 0x10; // sets bit 4 from REG_MODEM_CONFIG1
+			break;
+		case CR_7:
+			config1 = config1 & 0xDF; // clears bit 5 from REG_MODEM_CONFIG1
+			config1 = config1 | 0x18; // sets bits 4 & 3 from REG_MODEM_CONFIG1
+			break;
+		case CR_8:
+			config1 = config1 & 0xE7; // clears bits 4 & 3 from REG_MODEM_CONFIG1
+			config1 = config1 | 0x20; // sets bit 5 from REG_MODEM_CONFIG1
+			break;
+		}
+		writeRegister(REG_MODEM_CONFIG1, config1); // Update config1
 
-	  config1 = readRegister(REG_MODEM_CONFIG1);
-	  // ((config1 >> 3) & 0x07) ---> take out bits 5-3 from REG_MODEM_CONFIG1 (=_codingRate)
-	  switch(cod)
-	  {
-		 case CR_5: if( ((config1 >> 3) & 0x07) == 0x01 )
-					{
-						state = 0;
-					}
-					break;
-		 case CR_6: if( ((config1 >> 3) & 0x07) == 0x02 )
-					{
-						state = 0;
-					}
-					break;
-		 case CR_7: if( ((config1 >> 3) & 0x07) == 0x03 )
-					{
-						state = 0;
-					}
-					break;
-		 case CR_8: if( ((config1 >> 3) & 0x07) == 0x04 )
-					{
-						state = 0;
-					}
-					break;
-	  }
-  }
+		config1 = readRegister(REG_MODEM_CONFIG1);
+		// ((config1 >> 3) & 0x07) ---> take out bits 5-3 from REG_MODEM_CONFIG1 (=_codingRate)
+		switch (cod)
+		{
+		case CR_5:
+			if (((config1 >> 3) & 0x07) == 0x01)
+			{
+				state = 0;
+			}
+			break;
+		case CR_6:
+			if (((config1 >> 3) & 0x07) == 0x02)
+			{
+				state = 0;
+			}
+			break;
+		case CR_7:
+			if (((config1 >> 3) & 0x07) == 0x03)
+			{
+				state = 0;
+			}
+			break;
+		case CR_8:
+			if (((config1 >> 3) & 0x07) == 0x04)
+			{
+				state = 0;
+			}
+			break;
+		}
+	}
 
-  if( isCR(cod) )
-  {
-	  _codingRate = cod;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## Coding Rate "));
-		  my_printf(cod,HEX);
-		  my_printf(F(" has been successfully set ##"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	  state = 1;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("** There has been an error while configuring Coding Rate parameter **"));
-		  my_printf();
-	  #endif
-  }
-  writeRegister(REG_OP_MODE,st0);	// Getting back to previous status
-  return state;
+	if (isCR(cod))
+	{
+		_codingRate = cod;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Coding Rate "));
+		my_printf(cod, HEX);
+		my_printf(F(" has been successfully set ##"));
+		my_printf();
+#endif
+	}
+	else
+	{
+		state = 1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** There has been an error while configuring Coding Rate parameter **"));
+		my_printf();
+#endif
+	}
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
+	return state;
 }
 
 /*
@@ -1722,48 +1758,50 @@ int8_t	sx1272_INSAT::setCR(uint8_t cod)
  Parameters:
    ch: frequency channel value to check.
 */
-bool	sx1272_INSAT::isChannel(uint32_t ch)
+bool sx1272_INSAT::isChannel(uint32_t ch)
 {
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'isChannel'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'isChannel'"));
+#endif
 
-  // Checking available values for _channel
-  switch(ch)
-  {
-    case CH_868v1:
-    case CH_868v3:
-    case CH_868v5:
-	  case CH_10_868:
-	  case CH_11_868:
-	  case CH_12_868:
-	  case CH_13_868:
-	  case CH_14_868:
-	  case CH_15_868:
-	  case CH_16_868:
-	  case CH_17_868:
-	  case CH_00_900:
-	  case CH_01_900:
-	  case CH_02_900:
-	  case CH_03_900:
-	  case CH_04_900:
-	  case CH_05_900:
-	  case CH_06_900:
-	  case CH_07_900:
-	  case CH_08_900:
-	  case CH_09_900:
-	  case CH_10_900:
-	  case CH_11_900:
-	  case CH_12_900:	return true;
-						break;
+	// Checking available values for _channel
+	switch (ch)
+	{
+	case CH_868v1:
+	case CH_868v3:
+	case CH_868v5:
+	case CH_10_868:
+	case CH_11_868:
+	case CH_12_868:
+	case CH_13_868:
+	case CH_14_868:
+	case CH_15_868:
+	case CH_16_868:
+	case CH_17_868:
+	case CH_00_900:
+	case CH_01_900:
+	case CH_02_900:
+	case CH_03_900:
+	case CH_04_900:
+	case CH_05_900:
+	case CH_06_900:
+	case CH_07_900:
+	case CH_08_900:
+	case CH_09_900:
+	case CH_10_900:
+	case CH_11_900:
+	case CH_12_900:
+		return true;
+		break;
 
-	  default:			return false;
-  }
-  #if (SX1272_debug_mode > 1)
-	  my_printf(F("## Finished 'isChannel' ##"));
-	  my_printf();
-  #endif
+	default:
+		return false;
+	}
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Finished 'isChannel' ##"));
+	my_printf();
+#endif
 }
 
 /*
@@ -1775,38 +1813,38 @@ bool	sx1272_INSAT::isChannel(uint32_t ch)
 */
 uint8_t sx1272_INSAT::getChannel()
 {
-  uint8_t state = 2;
-  uint32_t ch;
-  uint8_t freq3;
-  uint8_t freq2;
-  uint8_t freq1;
+	uint8_t state = 2;
+	uint32_t ch;
+	uint8_t freq3;
+	uint8_t freq2;
+	uint8_t freq1;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'getChannel'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getChannel'"));
+#endif
 
-  freq3 = readRegister(REG_FRF_MSB);	// frequency channel MSB
-  freq2 = readRegister(REG_FRF_MID);	// frequency channel MID
-  freq1 = readRegister(REG_FRF_LSB);	// frequency channel LSB
-  ch = ((uint32_t)freq3 << 16) + ((uint32_t)freq2 << 8) + (uint32_t)freq1;
-  _channel = ch;						// frequency channel
+	freq3 = readRegister(REG_FRF_MSB); // frequency channel MSB
+	freq2 = readRegister(REG_FRF_MID); // frequency channel MID
+	freq1 = readRegister(REG_FRF_LSB); // frequency channel LSB
+	ch = ((uint32_t)freq3 << 16) + ((uint32_t)freq2 << 8) + (uint32_t)freq1;
+	_channel = ch; // frequency channel
 
-  if( (_channel == ch) && isChannel(_channel) )
-  {
-	  state = 0;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## Frequency channel is "));
-		  my_printf(_channel,HEX);
-		  my_printf(F(" ##"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	  state = 1;
-  }
-  return state;
+	if ((_channel == ch) && isChannel(_channel))
+	{
+		state = 0;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Frequency channel is "));
+		my_printf(_channel, HEX);
+		my_printf(F(" ##"));
+		my_printf();
+#endif
+	}
+	else
+	{
+		state = 1;
+	}
+	return state;
 }
 
 /*
@@ -1821,78 +1859,78 @@ uint8_t sx1272_INSAT::getChannel()
 */
 int8_t sx1272_INSAT::setChannel(uint32_t ch)
 {
-  uint8_t st0;
-  int8_t state = 2;
-  unsigned int freq3;
-  unsigned int freq2;
-  uint8_t freq1;
-  uint32_t freq;
+	uint8_t st0;
+	int8_t state = 2;
+	unsigned int freq3;
+	unsigned int freq2;
+	uint8_t freq1;
+	uint32_t freq;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'setChannel'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setChannel'"));
+#endif
 
-  st0 = readRegister(REG_OP_MODE);	// Save the previous status
-  if( _modem == LORA )
-  {
-	  // LoRa Stdby mode in order to write in registers
-	  writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
-  }
-  else
-  {
-	  // FSK Stdby mode in order to write in registers
-	  writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
-  }
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
+	if (_modem == LORA)
+	{
+		// LoRa Stdby mode in order to write in registers
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
+	}
+	else
+	{
+		// FSK Stdby mode in order to write in registers
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
+	}
 
-  freq3 = ((ch >> 16) & 0x0FF);		// frequency channel MSB
-  freq2 = ((ch >> 8) & 0x0FF);		// frequency channel MIB
-  freq1 = (ch & 0xFF);				// frequency channel LSB
+	freq3 = ((ch >> 16) & 0x0FF); // frequency channel MSB
+	freq2 = ((ch >> 8) & 0x0FF);  // frequency channel MIB
+	freq1 = (ch & 0xFF);		  // frequency channel LSB
 
-  writeRegister(REG_FRF_MSB, freq3);
-  writeRegister(REG_FRF_MID, freq2);
-  writeRegister(REG_FRF_LSB, freq1);
+	writeRegister(REG_FRF_MSB, freq3);
+	writeRegister(REG_FRF_MID, freq2);
+	writeRegister(REG_FRF_LSB, freq1);
 
-  // storing MSB in freq channel value
-  freq3 = (readRegister(REG_FRF_MSB));
-  freq = (freq3 << 8) & 0xFFFFFF;
+	// storing MSB in freq channel value
+	freq3 = (readRegister(REG_FRF_MSB));
+	freq = (freq3 << 8) & 0xFFFFFF;
 
-  // storing MID in freq channel value
-  freq2 = (readRegister(REG_FRF_MID));
-  freq = (freq << 8) + ((freq2 << 8) & 0xFFFFFF);
+	// storing MID in freq channel value
+	freq2 = (readRegister(REG_FRF_MID));
+	freq = (freq << 8) + ((freq2 << 8) & 0xFFFFFF);
 
-  // storing LSB in freq channel value
-  freq = freq + ((readRegister(REG_FRF_LSB)) & 0xFFFFFF);
+	// storing LSB in freq channel value
+	freq = freq + ((readRegister(REG_FRF_LSB)) & 0xFFFFFF);
 
-  if( freq == ch )
-  {
-    state = 0;
-    _channel = ch;
-    #if (SX1272_debug_mode > 1)
+	if (freq == ch)
+	{
+		state = 0;
+		_channel = ch;
+#if (SX1272_debug_mode > 1)
 		my_printf(F("## Frequency channel "));
-		my_printf(ch,HEX);
+		my_printf(ch, HEX);
 		my_printf(F(" has been successfully set ##"));
 		my_printf();
-	#endif
-  }
-  else
-  {
-    state = 1;
-  }
+#endif
+	}
+	else
+	{
+		state = 1;
+	}
 
-  if( not isChannel(ch) )
-  {
-	 state = -1;
-	 #if (SX1272_debug_mode > 1)
-		 my_printf(F("** Frequency channel "));
-		 my_printf(ch,HEX);
-		 my_printf(F("is not a correct value **"));
-		 my_printf();
-	 #endif
-  }
+	if (not isChannel(ch))
+	{
+		state = -1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Frequency channel "));
+		my_printf(ch, HEX);
+		my_printf(F("is not a correct value **"));
+		my_printf();
+#endif
+	}
 
-  writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
-  return state;
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
+	return state;
 }
 
 /*
@@ -1904,30 +1942,30 @@ int8_t sx1272_INSAT::setChannel(uint32_t ch)
 */
 uint8_t sx1272_INSAT::getPower()
 {
-  uint8_t state = 2;
-  uint8_t value = 0x00;
+	uint8_t state = 2;
+	uint8_t value = 0x00;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'getPower'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getPower'"));
+#endif
 
-  value = readRegister(REG_PA_CONFIG);
-  state = 1;
+	value = readRegister(REG_PA_CONFIG);
+	state = 1;
 
-  _power = value;
-  if( (value > -1) && (value < 16) )
-  {
-	    state = 0;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Output power is "));
-			my_printf(_power,HEX);
-			my_printf(F(" ##"));
-			my_printf();
-		#endif
+	_power = value;
+	if ((value > -1) && (value < 16))
+	{
+		state = 0;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Output power is "));
+		my_printf(_power, HEX);
+		my_printf(F(" ##"));
+		my_printf();
+#endif
 	}
 
-  return state;
+	return state;
 }
 
 /*
@@ -1942,62 +1980,66 @@ uint8_t sx1272_INSAT::getPower()
 */
 int8_t sx1272_INSAT::setPower(char p)
 {
-  uint8_t st0;
-  int8_t state = 2;
-  uint8_t value = 0x00;
+	uint8_t st0;
+	int8_t state = 2;
+	uint8_t value = 0x00;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'setPower'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setPower'"));
+#endif
 
-  st0 = readRegister(REG_OP_MODE);	  // Save the previous status
-  if( _modem == LORA )
-  { // LoRa Stdby mode to write in registers
-	  writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
-  }
-  else
-  { // FSK Stdby mode to write in registers
-	  writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
-  }
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
+	if (_modem == LORA)
+	{ // LoRa Stdby mode to write in registers
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
+	}
+	else
+	{ // FSK Stdby mode to write in registers
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
+	}
 
-  switch (p)
-  {
-    // L = low
-    // H = high
-    // M = max
+	switch (p)
+	{
+		// L = low
+		// H = high
+		// M = max
 
-    case 'M':  _power = 0x0F;
-               break;
+	case 'M':
+		_power = 0x0F;
+		break;
 
-    case 'L':  _power = 0x00;
-               break;
+	case 'L':
+		_power = 0x00;
+		break;
 
-    case 'H':  _power = 0x07;
-               break;
+	case 'H':
+		_power = 0x07;
+		break;
 
-    default:   state = -1;
-               break;
-  }
+	default:
+		state = -1;
+		break;
+	}
 
-  writeRegister(REG_PA_CONFIG, _power);	// Setting output power value
-  value = readRegister(REG_PA_CONFIG);
+	writeRegister(REG_PA_CONFIG, _power); // Setting output power value
+	value = readRegister(REG_PA_CONFIG);
 
-  if( value == _power )
-  {
-	  state = 0;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## Output power has been successfully set ##"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	  state = 1;
-  }
+	if (value == _power)
+	{
+		state = 0;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Output power has been successfully set ##"));
+		my_printf();
+#endif
+	}
+	else
+	{
+		state = 1;
+	}
 
-  writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
-  return state;
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
+	return state;
 }
 
 /*
@@ -2008,63 +2050,62 @@ int8_t sx1272_INSAT::setPower(char p)
    state = 0  --> The command has been executed with no errors
    state = -1 --> Forbidden command for this protocol
  Parameters:
-   pow: power option to set in configuration. The input value range is from 
+   pow: power option to set in configuration. The input value range is from
    0 to 14 dBm.
 */
 int8_t sx1272_INSAT::setPower(uint8_t pow)
 {
-  uint8_t st0;
-  int8_t state = 2;
-  uint8_t value = 0x00;
+	uint8_t st0;
+	int8_t state = 2;
+	uint8_t value = 0x00;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'setPower'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setPower'"));
+#endif
 
-  st0 = readRegister(REG_OP_MODE);	  // Save the previous status
-  if( _modem == LORA )
-  { // LoRa Stdby mode to write in registers
-	  writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
-  }
-  else
-  { // FSK Stdby mode to write in registers
-	  writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
-  }
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
+	if (_modem == LORA)
+	{ // LoRa Stdby mode to write in registers
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
+	}
+	else
+	{ // FSK Stdby mode to write in registers
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
+	}
 
-  if ( (pow >= 0) && (pow < 15) )
-  {
-	  _power = pow;
-  }
-  else
-  {
-	  state = -1;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## Power value is not valid ##"));
-		  my_printf();
-	  #endif
-  }
+	if ((pow >= 0) && (pow < 15))
+	{
+		_power = pow;
+	}
+	else
+	{
+		state = -1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Power value is not valid ##"));
+		my_printf();
+#endif
+	}
 
-  writeRegister(REG_PA_CONFIG, _power);	// Setting output power value
-  value = readRegister(REG_PA_CONFIG);
+	writeRegister(REG_PA_CONFIG, _power); // Setting output power value
+	value = readRegister(REG_PA_CONFIG);
 
-  if( value == _power )
-  {
-	  state = 0;
-	  #if (SX1272_debug_mode > 1)
-		  my_printf(F("## Output power has been successfully set ##"));
-		  my_printf();
-	  #endif
-  }
-  else
-  {
-	  state = 1;
-  }
+	if (value == _power)
+	{
+		state = 0;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Output power has been successfully set ##"));
+		my_printf();
+#endif
+	}
+	else
+	{
+		state = 1;
+	}
 
-  writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
-  return state;
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
+	return state;
 }
-
 
 /*
  Function: Gets the preamble length from the module.
@@ -2078,26 +2119,26 @@ uint8_t sx1272_INSAT::getPreambleLength()
 	int8_t state = 2;
 	uint8_t p_length;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getPreambleLength'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getPreambleLength'"));
+#endif
 
 	state = 1;
-	if( _modem == LORA )
-  	{ // LORA mode
-  		p_length = readRegister(REG_PREAMBLE_MSB_LORA);
-  		// Saving MSB preamble length in LoRa mode
+	if (_modem == LORA)
+	{ // LORA mode
+		p_length = readRegister(REG_PREAMBLE_MSB_LORA);
+		// Saving MSB preamble length in LoRa mode
 		_preamblelength = (p_length << 8) & 0xFFFF;
 		p_length = readRegister(REG_PREAMBLE_LSB_LORA);
-  		// Saving LSB preamble length in LoRa mode
+		// Saving LSB preamble length in LoRa mode
 		_preamblelength = _preamblelength + (p_length & 0xFFFF);
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Preamble length configured is "));
-			my_printf(_preamblelength,HEX);
-			my_printf(F(" ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Preamble length configured is "));
+		my_printf(_preamblelength, HEX);
+		my_printf(F(" ##"));
+		my_printf();
+#endif
 	}
 	else
 	{ // FSK mode
@@ -2107,12 +2148,12 @@ uint8_t sx1272_INSAT::getPreambleLength()
 		p_length = readRegister(REG_PREAMBLE_LSB_FSK);
 		// Saving LSB preamble length in FSK mode
 		_preamblelength = _preamblelength + (p_length & 0xFFFF);
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Preamble length configured is "));
-			my_printf(_preamblelength,HEX);
-			my_printf(F(" ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Preamble length configured is "));
+		my_printf(_preamblelength, HEX);
+		my_printf(F(" ##"));
+		my_printf();
+#endif
 	}
 	state = 0;
 	return state;
@@ -2133,43 +2174,43 @@ uint8_t sx1272_INSAT::setPreambleLength(uint16_t l)
 	uint8_t p_length;
 	int8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setPreambleLength'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setPreambleLength'"));
+#endif
 
-	st0 = readRegister(REG_OP_MODE);	// Save the previous status
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
 	state = 1;
-	if( _modem == LORA )
-  	{ // LoRa mode
-  		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);    // Set Standby mode to write in registers
-  		p_length = ((l >> 8) & 0x0FF);
-  		// Storing MSB preamble length in LoRa mode
+	if (_modem == LORA)
+	{												   // LoRa mode
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // Set Standby mode to write in registers
+		p_length = ((l >> 8) & 0x0FF);
+		// Storing MSB preamble length in LoRa mode
 		writeRegister(REG_PREAMBLE_MSB_LORA, p_length);
 		p_length = (l & 0x0FF);
 		// Storing LSB preamble length in LoRa mode
 		writeRegister(REG_PREAMBLE_LSB_LORA, p_length);
 	}
 	else
-	{ // FSK mode
-		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);    // Set Standby mode to write in registers
+	{												  // FSK mode
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // Set Standby mode to write in registers
 		p_length = ((l >> 8) & 0x0FF);
-  		// Storing MSB preamble length in FSK mode
+		// Storing MSB preamble length in FSK mode
 		writeRegister(REG_PREAMBLE_MSB_FSK, p_length);
 		p_length = (l & 0x0FF);
-  		// Storing LSB preamble length in FSK mode
+		// Storing LSB preamble length in FSK mode
 		writeRegister(REG_PREAMBLE_LSB_FSK, p_length);
 	}
 
 	state = 0;
-	#if (SX1272_debug_mode > 1)
-		my_printf(F("## Preamble length "));
-		my_printf(l,HEX);
-		my_printf(F(" has been successfully set ##"));
-		my_printf();
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Preamble length "));
+	my_printf(l, HEX);
+	my_printf(F(" has been successfully set ##"));
+	my_printf();
+#endif
 
-	writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
 	return state;
 }
 
@@ -2184,30 +2225,30 @@ uint8_t sx1272_INSAT::getPayloadLength()
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getPayloadLength'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getPayloadLength'"));
+#endif
 
-	if( _modem == LORA )
-  	{ // LORA mode
-  		// Saving payload length in LoRa mode
+	if (_modem == LORA)
+	{	// LORA mode
+		// Saving payload length in LoRa mode
 		_payloadlength = readRegister(REG_PAYLOAD_LENGTH_LORA);
 		state = 1;
 	}
 	else
-	{ // FSK mode
-  		// Saving payload length in FSK mode
+	{	// FSK mode
+		// Saving payload length in FSK mode
 		_payloadlength = readRegister(REG_PAYLOAD_LENGTH_FSK);
 		state = 1;
 	}
 
-	#if (SX1272_debug_mode > 1)
-		my_printf(F("## Payload length configured is "));
-		my_printf(_payloadlength,HEX);
-		my_printf(F(" ##"));
-		my_printf();
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Payload length configured is "));
+	my_printf(_payloadlength, HEX);
+	my_printf(F(" ##"));
+	my_printf();
+#endif
 
 	state = 0;
 	return state;
@@ -2245,48 +2286,48 @@ int8_t sx1272_INSAT::setPacketLength(uint8_t l)
 	uint8_t value = 0x00;
 	int8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setPacketLength'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setPacketLength'"));
+#endif
 
-	st0 = readRegister(REG_OP_MODE);	// Save the previous status
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
 	//----
 	//	truncPayload(l);
 	packet_sent.length = l;
 	//
-	if( _modem == LORA )
-  	{ // LORA mode
-  		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);    // Set LoRa Standby mode to write in registers
+	if (_modem == LORA)
+	{												   // LORA mode
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // Set LoRa Standby mode to write in registers
 		writeRegister(REG_PAYLOAD_LENGTH_LORA, packet_sent.length);
 		// Storing payload length in LoRa mode
 		value = readRegister(REG_PAYLOAD_LENGTH_LORA);
 	}
 	else
-	{ // FSK mode
-		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);    //  Set FSK Standby mode to write in registers
+	{												  // FSK mode
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); //  Set FSK Standby mode to write in registers
 		writeRegister(REG_PAYLOAD_LENGTH_FSK, packet_sent.length);
 		// Storing payload length in FSK mode
 		value = readRegister(REG_PAYLOAD_LENGTH_FSK);
 	}
 
-	if( packet_sent.length == value )
+	if (packet_sent.length == value)
 	{
 		state = 0;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Packet length "));
-			my_printf(packet_sent.length, DEC);
-			my_printf(F(" has been successfully set ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Packet length "));
+		my_printf(packet_sent.length, DEC);
+		my_printf(F(" has been successfully set ##"));
+		my_printf();
+#endif
 	}
 	else
 	{
 		state = 1;
 	}
 
-	writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
-  	//delay_ms(250);
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
+									 //delay_ms(250);
 	return state;
 }
 
@@ -2302,41 +2343,41 @@ uint8_t sx1272_INSAT::getNodeAddress()
 	uint8_t st0 = 0;
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getNodeAddress'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getNodeAddress'"));
+#endif
 
-	if( _modem == LORA )
-	{ 
+	if (_modem == LORA)
+	{
 		// Nothing to read
-		// node address is stored in _nodeAddress attribute		
+		// node address is stored in _nodeAddress attribute
 		state = 0;
-	}	
+	}
 	else
 	{
 		// FSK mode
-		st0 = readRegister(REG_OP_MODE);	// Save the previous status
-		
+		st0 = readRegister(REG_OP_MODE); // Save the previous status
+
 		// Allowing access to FSK registers while in LoRa standby mode
 		writeRegister(REG_OP_MODE, LORA_STANDBY_FSK_REGS_MODE);
 
 		// Read node address
-		_nodeAddress = readRegister(REG_NODE_ADRS);		
-		
+		_nodeAddress = readRegister(REG_NODE_ADRS);
+
 		// Getting back to previous status
-		writeRegister(REG_OP_MODE, st0);	
-		
+		writeRegister(REG_OP_MODE, st0);
+
 		// update state
 		state = 0;
 	}
-	
-	#if (SX1272_debug_mode > 1)
-		my_printf(F("## Node address configured is "));
-		my_printf(_nodeAddress, DEC);
-		my_printf(F(" ##"));
-		my_printf();
-	#endif
+
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Node address configured is "));
+	my_printf(_nodeAddress, DEC);
+	my_printf(F(" ##"));
+	my_printf();
+#endif
 	return state;
 }
 
@@ -2356,64 +2397,64 @@ int8_t sx1272_INSAT::setNodeAddress(uint8_t addr)
 	uint8_t value;
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setNodeAddress'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setNodeAddress'"));
+#endif
 
 	// check address value is within valid range
-	if( addr > 255 )
+	if (addr > 255)
 	{
 		state = -1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Node address must be less than 255 **"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Node address must be less than 255 **"));
+		my_printf();
+#endif
 	}
 	else
 	{
 		// Saving node address
 		_nodeAddress = addr;
-		st0 = readRegister(REG_OP_MODE);	  // Save the previous status
+		st0 = readRegister(REG_OP_MODE); // Save the previous status
 
 		// in LoRa mode
 		state = 0;
 
-		if( _modem == LORA )
-		{ 
+		if (_modem == LORA)
+		{
 			// in LoRa mode, address is SW controlled
 			// set status to success
 			state = 0;
 		}
-		else if( _modem == FSK )
-		{ 
+		else if (_modem == FSK)
+		{
 			//Set FSK Standby mode to write in registers
-			writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);		
+			writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
 
 			// Storing node and broadcast address
 			writeRegister(REG_NODE_ADRS, addr);
 			writeRegister(REG_BROADCAST_ADRS, BROADCAST_0);
 
 			value = readRegister(REG_NODE_ADRS);
-			writeRegister(REG_OP_MODE, st0);		// Getting back to previous status
+			writeRegister(REG_OP_MODE, st0); // Getting back to previous status
 
-			if( value == _nodeAddress )
+			if (value == _nodeAddress)
 			{
 				state = 0;
-				#if (SX1272_debug_mode > 1)
-					my_printf(F("## Node address "));
-					my_printf(_nodeAddress, DEC);
-					my_printf(F(" has been successfully set ##"));
-					my_printf();
-				#endif
+#if (SX1272_debug_mode > 1)
+				my_printf(F("## Node address "));
+				my_printf(_nodeAddress, DEC);
+				my_printf(F(" has been successfully set ##"));
+				my_printf();
+#endif
 			}
 			else
 			{
 				state = 1;
-				#if (SX1272_debug_mode > 1)
-					my_printf(F("** There has been an error while setting address ##"));
-					my_printf();
-				#endif
+#if (SX1272_debug_mode > 1)
+				my_printf(F("** There has been an error while setting address ##"));
+				my_printf();
+#endif
 			}
 		}
 	}
@@ -2429,47 +2470,47 @@ int8_t sx1272_INSAT::setNodeAddress(uint8_t addr)
    state = -1 --> Forbidden command for this protocol
 */
 int8_t sx1272_INSAT::getSNR()
-{	// getSNR exists only in LoRa mode
-  int8_t state = 2;
-  uint8_t value;
+{ // getSNR exists only in LoRa mode
+	int8_t state = 2;
+	uint8_t value;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'getSNR'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getSNR'"));
+#endif
 
-  if( _modem == LORA )
-  { // LoRa mode
-	  state = 1;
-	  value = readRegister(REG_PKT_SNR_VALUE);
-	  if( value & 0x80 ) // The SNR sign bit is 1
-	  {
-		  // Invert and divide by 4
-		  value = ( ( ~value + 1 ) & 0xFF ) >> 2;
-          _SNR = -value;
-      }
-      else
-      {
-		  // Divide by 4
-		  _SNR = ( value & 0xFF ) >> 2;
-	  }
-	  state = 0;
-	  #if (SX1272_debug_mode > 0)
-		  my_printf(F("## SNR value is "));
-		  my_printf(_SNR, DEC);
-		  my_printf(F(" ##"));
-		  my_printf();
-	  #endif
-  }
-  else
-  { // forbidden command if FSK mode
-	state = -1;
-	#if (SX1272_debug_mode > 0)
+	if (_modem == LORA)
+	{ // LoRa mode
+		state = 1;
+		value = readRegister(REG_PKT_SNR_VALUE);
+		if (value & 0x80) // The SNR sign bit is 1
+		{
+			// Invert and divide by 4
+			value = ((~value + 1) & 0xFF) >> 2;
+			_SNR = -value;
+		}
+		else
+		{
+			// Divide by 4
+			_SNR = (value & 0xFF) >> 2;
+		}
+		state = 0;
+#if (SX1272_debug_mode > 0)
+		my_printf(F("## SNR value is "));
+		my_printf(_SNR, DEC);
+		my_printf(F(" ##"));
+		my_printf();
+#endif
+	}
+	else
+	{ // forbidden command if FSK mode
+		state = -1;
+#if (SX1272_debug_mode > 0)
 		my_printf(F("** SNR does not exist in FSK mode **"));
 		my_printf();
-	#endif
-  }
-  return state;
+#endif
+	}
+	return state;
 }
 
 /*
@@ -2485,50 +2526,50 @@ uint8_t sx1272_INSAT::getRSSI()
 	int rssi_mean = 0;
 	int total = 5;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getRSSI'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getRSSI'"));
+#endif
 
-	if( _modem == LORA )
-	{ 
+	if (_modem == LORA)
+	{
 		/// LoRa mode
 		// get mean value of RSSI
-		for(int i = 0; i < total; i++)
+		for (int i = 0; i < total; i++)
 		{
 			_RSSI = -OFFSET_RSSI + readRegister(REG_RSSI_VALUE_LORA);
-			rssi_mean += _RSSI;			
+			rssi_mean += _RSSI;
 		}
-		rssi_mean = rssi_mean / total;	
+		rssi_mean = rssi_mean / total;
 		_RSSI = rssi_mean;
-		
+
 		state = 0;
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("## RSSI value is "));
-			my_printf(_RSSI, DEC);
-			my_printf(F(" ##"));
-			my_printf();
-		#endif	
+#if (SX1272_debug_mode > 0)
+		my_printf(F("## RSSI value is "));
+		my_printf(_RSSI, DEC);
+		my_printf(F(" ##"));
+		my_printf();
+#endif
 	}
 	else
-	{ 
+	{
 		/// FSK mode
 		// get mean value of RSSI
-		for(int i = 0; i < total; i++)
+		for (int i = 0; i < total; i++)
 		{
 			_RSSI = -(readRegister(REG_RSSI_VALUE_FSK) >> 1);
 			rssi_mean += _RSSI;
 		}
-		rssi_mean = rssi_mean / total;	
+		rssi_mean = rssi_mean / total;
 		_RSSI = rssi_mean;
-		
+
 		state = 0;
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("## RSSI value is "));
-			my_printf(_RSSI);
-			my_printf(F(" ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 0)
+		my_printf(F("## RSSI value is "));
+		my_printf(_RSSI);
+		my_printf(F(" ##"));
+		my_printf();
+#endif
 	}
 
 	return state;
@@ -2543,48 +2584,48 @@ uint8_t sx1272_INSAT::getRSSI()
    state = -1 --> Forbidden command for this protocol
 */
 int16_t sx1272_INSAT::getRSSIpacket()
-{	// RSSIpacket only exists in LoRa
-  int8_t state = 2;
+{ // RSSIpacket only exists in LoRa
+	int8_t state = 2;
 
-  #if (SX1272_debug_mode > 1)
-	  my_printf();
-	  my_printf(F("Starting 'getRSSIpacket'"));
-  #endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getRSSIpacket'"));
+#endif
 
-  state = 1;
-  if( _modem == LORA )
-  { // LoRa mode
-	  state = getSNR();
-	  if( state == 0 )
-	  {
-		  if( _SNR < 0 )
-		  {
-			  _RSSIpacket = -NOISE_ABSOLUTE_ZERO + 10.0 * SignalBwLog[_bandwidth] + NOISE_FIGURE + ( double )_SNR;
-			  state = 0;
-		  }
-		  else
-		  {
-			  _RSSIpacket = readRegister(REG_PKT_RSSI_VALUE);
-			  _RSSIpacket = -OFFSET_RSSI + ( double )_RSSIpacket;
-			  state = 0;
-		  }
-	  #if (SX1272_debug_mode > 0)
-		  my_printf(F("## RSSI packet value is "));
-		  my_printf(_RSSIpacket, DEC);
-  		  my_printf(F(" ##"));
-		  my_printf();
-	  #endif
-	  }
-  }
-  else
-  { // RSSI packet doesn't exist in FSK mode
-	state = -1;
-	#if (SX1272_debug_mode > 0)
+	state = 1;
+	if (_modem == LORA)
+	{ // LoRa mode
+		state = getSNR();
+		if (state == 0)
+		{
+			if (_SNR < 0)
+			{
+				_RSSIpacket = -NOISE_ABSOLUTE_ZERO + 10.0 * SignalBwLog[_bandwidth] + NOISE_FIGURE + (double)_SNR;
+				state = 0;
+			}
+			else
+			{
+				_RSSIpacket = readRegister(REG_PKT_RSSI_VALUE);
+				_RSSIpacket = -OFFSET_RSSI + (double)_RSSIpacket;
+				state = 0;
+			}
+#if (SX1272_debug_mode > 0)
+			my_printf(F("## RSSI packet value is "));
+			my_printf(_RSSIpacket, DEC);
+			my_printf(F(" ##"));
+			my_printf();
+#endif
+		}
+	}
+	else
+	{ // RSSI packet doesn't exist in FSK mode
+		state = -1;
+#if (SX1272_debug_mode > 0)
 		my_printf(F("** RSSI packet does not exist in FSK mode **"));
 		my_printf();
-	#endif
-  }
-  return state;
+#endif
+	}
+	return state;
 }
 
 /*
@@ -2599,32 +2640,32 @@ uint8_t sx1272_INSAT::setRetries(uint8_t ret)
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setRetries'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setRetries'"));
+#endif
 
 	state = 1;
-	if( ret > MAX_RETRIES )
+	if (ret > MAX_RETRIES)
 	{
 		state = -1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Retries value can't be greater than "));
-			my_printf(MAX_RETRIES, DEC);
-			my_printf(F(" **"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Retries value can't be greater than "));
+		my_printf(MAX_RETRIES, DEC);
+		my_printf(F(" **"));
+		my_printf();
+#endif
 	}
 	else
 	{
 		_maxRetries = ret;
 		state = 0;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Maximum retries value = "));
-			my_printf(_maxRetries, DEC);
-			my_printf(F(" ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Maximum retries value = "));
+		my_printf(_maxRetries, DEC);
+		my_printf(F(" ##"));
+		my_printf();
+#endif
 	}
 	return state;
 }
@@ -2643,37 +2684,37 @@ uint8_t sx1272_INSAT::getMaxCurrent()
 	int8_t state = 2;
 	uint8_t value;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getMaxCurrent'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getMaxCurrent'"));
+#endif
 
 	state = 1;
 	_maxCurrent = readRegister(REG_OCP);
-	
+
 	// extract only the OcpTrim value from the OCP register
 	_maxCurrent &= 0x1F;
 
-	if( _maxCurrent <= 15 )
+	if (_maxCurrent <= 15)
 	{
 		value = (45 + (5 * _maxCurrent));
 	}
-	else if( _maxCurrent <= 27 )
+	else if (_maxCurrent <= 27)
 	{
 		value = (-30 + (10 * _maxCurrent));
 	}
 	else
 	{
-		value = 240;		
+		value = 240;
 	}
 
 	_maxCurrent = value;
-	#if (SX1272_debug_mode > 1)
-		my_printf(F("## Maximum current supply configured is "));
-		my_printf(value, DEC);
-		my_printf(F(" mA ##"));
-		my_printf();
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Maximum current supply configured is "));
+	my_printf(value, DEC);
+	my_printf(F(" mA ##"));
+	my_printf();
+#endif
 	state = 0;
 	return state;
 }
@@ -2686,7 +2727,7 @@ uint8_t sx1272_INSAT::getMaxCurrent()
    state = 0  --> The command has been executed with no errors
    state = -1 --> Forbidden parameter value for this function
  Parameters:
-   rate: value to compute the maximum current supply. Range: 0x00 to 0x1B. The 
+   rate: value to compute the maximum current supply. Range: 0x00 to 0x1B. The
    Maximum current is:
 	Imax = 45+5*OcpTrim [mA] 	if OcpTrim <= 15 (120 mA) /
 	Imax = -30+10*OcpTrim [mA] 	if 15 < OcpTrim <= 27 (130 to 240 mA)
@@ -2697,38 +2738,38 @@ int8_t sx1272_INSAT::setMaxCurrent(uint8_t rate)
 	int8_t state = 2;
 	uint8_t st0;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setMaxCurrent'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setMaxCurrent'"));
+#endif
 
 	// Maximum rate value = 0x1B, because maximum current supply = 240 mA
 	if (rate > 0x1B)
 	{
 		state = -1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Maximum current supply is 240 mA, "));
-			my_printf(F("so maximum parameter value must be 27 (DEC) or 0x1B (HEX) **"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Maximum current supply is 240 mA, "));
+		my_printf(F("so maximum parameter value must be 27 (DEC) or 0x1B (HEX) **"));
+		my_printf();
+#endif
 	}
 	else
 	{
 		// Enable Over Current Protection
 		rate |= 0x20;
-		
+
 		state = 1;
-		st0 = readRegister(REG_OP_MODE);	// Save the previous status
-		if( _modem == LORA )
-		{ // LoRa mode
-			writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	// Set LoRa Standby mode to write in registers
+		st0 = readRegister(REG_OP_MODE); // Save the previous status
+		if (_modem == LORA)
+		{												   // LoRa mode
+			writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // Set LoRa Standby mode to write in registers
 		}
 		else
-		{ // FSK mode
-			writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	// Set FSK Standby mode to write in registers
+		{												  // FSK mode
+			writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // Set FSK Standby mode to write in registers
 		}
-		writeRegister(REG_OCP, rate);		// Modifying maximum current supply
-		writeRegister(REG_OP_MODE, st0);		// Getting back to previous status
+		writeRegister(REG_OCP, rate);	 // Modifying maximum current supply
+		writeRegister(REG_OP_MODE, st0); // Getting back to previous status
 		state = 0;
 	}
 	return state;
@@ -2746,118 +2787,118 @@ uint8_t sx1272_INSAT::getRegs()
 	int8_t state = 2;
 	uint8_t state_f = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getRegs'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getRegs'"));
+#endif
 
 	state_f = 1;
-	state = getMode();			// Stores the BW, CR and SF.
-	if( state == 0 )
+	state = getMode(); // Stores the BW, CR and SF.
+	if (state == 0)
 	{
-		state = getPower();		// Stores the power.
+		state = getPower(); // Stores the power.
 	}
 	else
 	{
 		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting mode **"));
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting mode **"));
+#endif
 	}
- 	if( state == 0 )
+	if (state == 0)
 	{
-		state = getChannel();	// Stores the channel.
-	}
-	else
-	{
-		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting power **"));
-		#endif
-	}
-	if( state == 0 )
-	{
-		state = getCRC();		// Stores the CRC configuration.
+		state = getChannel(); // Stores the channel.
 	}
 	else
 	{
 		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting channel **"));
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting power **"));
+#endif
 	}
-	if( state == 0 )
+	if (state == 0)
 	{
-		state = getHeader();	// Stores the header configuration.
-	}
-	else
-	{
-		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting CRC **"));
-		#endif
-	}
-	if( state == 0 )
-	{
-		state = getPreambleLength();	// Stores the preamble length.
+		state = getCRC(); // Stores the CRC configuration.
 	}
 	else
 	{
 		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting header **"));
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting channel **"));
+#endif
 	}
-	if( state == 0 )
+	if (state == 0)
 	{
-		state = getPayloadLength();		// Stores the payload length.
-	}
-	else
-	{
-		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting preamble length **"));
-		#endif
-	}
-	if( state == 0 )
-	{
-		state = getNodeAddress();		// Stores the node address.
+		state = getHeader(); // Stores the header configuration.
 	}
 	else
 	{
 		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting payload length **"));
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting CRC **"));
+#endif
 	}
-	if( state == 0 )
+	if (state == 0)
 	{
-		state = getMaxCurrent();		// Stores the maximum current supply.
-	}
-	else
-	{
-		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting node address **"));
-		#endif
-	}
-	if( state == 0 )
-	{
-		state_f = getTemp();		// Stores the module temperature.
+		state = getPreambleLength(); // Stores the preamble length.
 	}
 	else
 	{
 		state_f = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting maximum current supply **"));
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting header **"));
+#endif
 	}
-	if( state_f != 0 )
+	if (state == 0)
 	{
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("** Error getting temperature **"));
-			my_printf();
-		#endif
+		state = getPayloadLength(); // Stores the payload length.
+	}
+	else
+	{
+		state_f = 1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting preamble length **"));
+#endif
+	}
+	if (state == 0)
+	{
+		state = getNodeAddress(); // Stores the node address.
+	}
+	else
+	{
+		state_f = 1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting payload length **"));
+#endif
+	}
+	if (state == 0)
+	{
+		state = getMaxCurrent(); // Stores the maximum current supply.
+	}
+	else
+	{
+		state_f = 1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting node address **"));
+#endif
+	}
+	if (state == 0)
+	{
+		state_f = getTemp(); // Stores the module temperature.
+	}
+	else
+	{
+		state_f = 1;
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting maximum current supply **"));
+#endif
+	}
+	if (state_f != 0)
+	{
+#if (SX1272_debug_mode > 1)
+		my_printf(F("** Error getting temperature **"));
+		my_printf();
+#endif
 	}
 	return state_f;
 }
@@ -2875,12 +2916,12 @@ uint8_t sx1272_INSAT::truncPayload(uint16_t length16)
 
 	state = 1;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'truncPayload'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'truncPayload'"));
+#endif
 
-	if( length16 > MAX_PAYLOAD )
+	if (length16 > MAX_PAYLOAD)
 	{
 		_payloadlength = MAX_PAYLOAD;
 	}
@@ -2904,66 +2945,66 @@ uint8_t sx1272_INSAT::setACK()
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setACK'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setACK'"));
+#endif
 
-	clearFlags();	// Initializing flags
+	clearFlags(); // Initializing flags
 
-	if( _modem == LORA )
-	{ // LoRa mode
-		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	// Stdby LoRa mode to write in FIFO
+	if (_modem == LORA)
+	{												   // LoRa mode
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // Stdby LoRa mode to write in FIFO
 	}
 	else
-	{ // FSK mode
-		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	// Stdby FSK mode to write in FIFO
+	{												  // FSK mode
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // Stdby FSK mode to write in FIFO
 	}
 
 	// Setting ACK length in order to send it
 	state = setPacketLength(ACK_LENGTH);
-	if( state == 0 )
+	if (state == 0)
 	{
 		// Setting ACK
-		memset( &ACK, 0x00, sizeof(ACK) );
-		ACK.dst = packet_received.src; // ACK destination is packet source
-		ACK.src = packet_received.dst; // ACK source is packet destination
+		memset(&ACK, 0x00, sizeof(ACK));
+		ACK.dst = packet_received.src;		   // ACK destination is packet source
+		ACK.src = packet_received.dst;		   // ACK source is packet destination
 		ACK.packnum = packet_received.packnum; // packet number that has been correctly received
-		ACK.length = 0;		  // length = 0 to show that's an ACK
-		ACK.data[0] = _reception;	// CRC of the received packet
+		ACK.length = 0;						   // length = 0 to show that's an ACK
+		ACK.data[0] = _reception;			   // CRC of the received packet
 
 		// Setting address pointer in FIFO data buffer
 		writeRegister(REG_FIFO_ADDR_PTR, 0x00);
-		writeRegister(REG_FIFO_TX_BASE_ADDR, 0x00);  
+		writeRegister(REG_FIFO_TX_BASE_ADDR, 0x00);
 
 		state = 1;
 
 		// Writing ACK to send in FIFO
-		writeRegister(REG_FIFO, ACK.dst); 		// Writing the destination in FIFO
-		writeRegister(REG_FIFO, ACK.src);		// Writing the source in FIFO
-		writeRegister(REG_FIFO, ACK.packnum);	// Writing the packet number in FIFO
-		writeRegister(REG_FIFO, ACK.length); 	// Writing the packet length in FIFO
-		writeRegister(REG_FIFO, ACK.data[0]);	// Writing the ACK in FIFO
+		writeRegister(REG_FIFO, ACK.dst);	  // Writing the destination in FIFO
+		writeRegister(REG_FIFO, ACK.src);	  // Writing the source in FIFO
+		writeRegister(REG_FIFO, ACK.packnum); // Writing the packet number in FIFO
+		writeRegister(REG_FIFO, ACK.length);  // Writing the packet length in FIFO
+		writeRegister(REG_FIFO, ACK.data[0]); // Writing the ACK in FIFO
 
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("## ACK set and written in FIFO ##"));
-			// Print the complete ACK if debug_mode
-			my_printf(F("## ACK to send:"));
-			my_printf(ACK.dst,HEX);			 	// Printing destination
-			my_printf("|");
-			my_printf(ACK.src,HEX);			 	// Printing source
-			my_printf("|");
-			my_printf(ACK.packnum,HEX);			// Printing ACK number
-			my_printf("|");
-			my_printf(ACK.length,HEX);				// Printing ACK length
-			my_printf("|");
-			my_printf(ACK.data[0],HEX);			// Printing ACK payload
-			my_printf(F(" ##"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 0)
+		my_printf(F("## ACK set and written in FIFO ##"));
+		// Print the complete ACK if debug_mode
+		my_printf(F("## ACK to send:"));
+		my_printf(ACK.dst, HEX); // Printing destination
+		my_printf("|");
+		my_printf(ACK.src, HEX); // Printing source
+		my_printf("|");
+		my_printf(ACK.packnum, HEX); // Printing ACK number
+		my_printf("|");
+		my_printf(ACK.length, HEX); // Printing ACK length
+		my_printf("|");
+		my_printf(ACK.data[0], HEX); // Printing ACK payload
+		my_printf(F(" ##"));
+		my_printf();
+#endif
 
 		state = 0;
-		_reception = CORRECT_PACKET;		// Updating value to next packet
+		_reception = CORRECT_PACKET; // Updating value to next packet
 
 		delay_ms(500);
 	}
@@ -2980,59 +3021,59 @@ uint8_t sx1272_INSAT::setACK()
 uint8_t sx1272_INSAT::receive()
 {
 	uint8_t state = 1;
-	
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'receive'"));
-	#endif
+
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'receive'"));
+#endif
 
 	// Initializing packet_received struct
-	memset( &packet_received, 0x00, sizeof(packet_received) );	
+	memset(&packet_received, 0x00, sizeof(packet_received));
 
 	// Setting Testmode
-	writeRegister(0x31,0x43);
-	// Set LowPnTxPllOff 
+	writeRegister(0x31, 0x43);
+	// Set LowPnTxPllOff
 	writeRegister(REG_PA_RAMP, 0x09);
 	// Set LNA gain: Highest gain. LnaBoost:Improved sensitivity
 	writeRegister(REG_LNA, 0x23);
-	// Setting address pointer in FIFO data buffer		
-	writeRegister(REG_FIFO_ADDR_PTR, 0x00);  	
-	// change RegSymbTimeoutLsb 
+	// Setting address pointer in FIFO data buffer
+	writeRegister(REG_FIFO_ADDR_PTR, 0x00);
+	// change RegSymbTimeoutLsb
 	writeRegister(REG_SYMB_TIMEOUT_LSB, 0xFF);
 	// Setting current value of reception buffer pointer
 	writeRegister(REG_FIFO_RX_uint8_t_ADDR, 0x00);
-	
+
 	// Proceed depending on the protocol selected
-	if( _modem == LORA )
-	{ 
+	if (_modem == LORA)
+	{
 		/// LoRa mode
-		// With MAX_LENGTH gets all packets with length < MAX_LENGTH	
-		state = setPacketLength(MAX_LENGTH);	
+		// With MAX_LENGTH gets all packets with length < MAX_LENGTH
+		state = setPacketLength(MAX_LENGTH);
 		// Set LORA mode - Rx
-		writeRegister(REG_OP_MODE, LORA_RX_MODE);  	  
-		
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Receiving LoRa mode activated with success ##"));
-			my_printf((TIM6->CNT));
-		#endif
+		writeRegister(REG_OP_MODE, LORA_RX_MODE);
+
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Receiving LoRa mode activated with success ##"));
+		my_printf((TIM6->CNT));
+#endif
 	}
 	else
-	{ 
+	{
 		/// FSK mode
 		state = setPacketLength();
-    
+
 		// FSK mode - Rx
-		writeRegister(REG_OP_MODE, FSK_RX_MODE);  
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Receiving FSK mode activated with success ##"));
-			my_printf();
-		#endif
+		writeRegister(REG_OP_MODE, FSK_RX_MODE);
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Receiving FSK mode activated with success ##"));
+		my_printf();
+#endif
 	}
-	
-	#if (SX1272_debug_mode > 1)
-		//showRxRegisters();
-	#endif
-	
+
+#if (SX1272_debug_mode > 1)
+	//showRxRegisters();
+#endif
+
 	return state;
 }
 
@@ -3073,19 +3114,19 @@ uint8_t sx1272_INSAT::receivePacketTimeout(uint32_t wait)
 	uint8_t state = 2;
 	uint8_t state_f = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'receivePacketTimeout'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'receivePacketTimeout'"));
+#endif
 
 	// set RX mode
 	state = receive();
-	
+
 	// if RX mode is set correctly then wait for data
-	if( state == 0 )
+	if (state == 0)
 	{
 		// Wait for a new packet for 'wait' time
-		if( availableData(wait) )
+		if (availableData(wait))
 		{
 			// If packet received, getPacket
 			state_f = getPacket();
@@ -3141,28 +3182,27 @@ uint8_t sx1272_INSAT::receivePacketTimeoutACK(uint32_t wait)
 	uint8_t state = 2;
 	uint8_t state_f = 2;
 
-
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'receivePacketTimeoutACK'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'receivePacketTimeoutACK'"));
+#endif
 
 	// set RX mode
 	state = receive();
-	
+
 	// if RX mode is set correctly then wait for data
-	if( state == 0 )
+	if (state == 0)
 	{
 		// Wait for a new packet for 'wait' time
-		if( availableData(wait) )
+		if (availableData(wait))
 		{
 			// If packet received, getPacket
-			state = getPacket();		
+			state = getPacket();
 		}
 		else
 		{
 			state = 1;
-			state_f = 3;  // There is no packet received
+			state_f = 3; // There is no packet received
 		}
 	}
 	else
@@ -3170,30 +3210,29 @@ uint8_t sx1272_INSAT::receivePacketTimeoutACK(uint32_t wait)
 		state = 1;
 		state_f = 1; // There has been an error with the 'receive' function
 	}
-	
-	
-	if( (state == 0) || (state == 3) )
+
+	if ((state == 0) || (state == 3))
 	{
-		if( _reception == INCORRECT_PACKET )
+		if (_reception == INCORRECT_PACKET)
 		{
-			state_f = 4;  // The packet has been incorrectly received
+			state_f = 4; // The packet has been incorrectly received
 		}
 		else
 		{
-			state_f = 1;  // The packet has been correctly received
+			state_f = 1; // The packet has been correctly received
 		}
 		state = setACK();
-		if( state == 0 )
+		if (state == 0)
 		{
 			state = sendWithTimeout();
-			if( state == 0 )
+			if (state == 0)
 			{
-			state_f = 0;
-			#if (SX1272_debug_mode > 1)
+				state_f = 0;
+#if (SX1272_debug_mode > 1)
 				my_printf(F("This last packet was an ACK, so ..."));
 				my_printf(F("ACK successfully sent"));
 				my_printf();
-			#endif
+#endif
 			}
 			else
 			{
@@ -3219,7 +3258,7 @@ uint8_t sx1272_INSAT::receivePacketTimeoutACK(uint32_t wait)
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t	sx1272_INSAT::receiveAll()
+uint8_t sx1272_INSAT::receiveAll()
 {
 	return receiveAll(MAX_TIMEOUT);
 }
@@ -3236,32 +3275,32 @@ uint8_t sx1272_INSAT::receiveAll(uint32_t wait)
 	uint8_t state = 2;
 	uint8_t config1;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'receiveAll'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'receiveAll'"));
+#endif
 
-	if( _modem == FSK )
-	{ 
+	if (_modem == FSK)
+	{
 		/// FSK mode
-		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);		// Setting standby FSK mode
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // Setting standby FSK mode
 		config1 = readRegister(REG_PACKET_CONFIG1);
-		config1 = config1 & 0xF9;			// clears bits 2-1 from REG_PACKET_CONFIG1
-		writeRegister(REG_PACKET_CONFIG1, config1);		// AddressFiltering = None
+		config1 = config1 & 0xF9;					// clears bits 2-1 from REG_PACKET_CONFIG1
+		writeRegister(REG_PACKET_CONFIG1, config1); // AddressFiltering = None
 	}
 
-	#if (SX1272_debug_mode > 1)
-		my_printf(F("## Address filtering desactivated ##"));
-		my_printf();
-	#endif
-	
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Address filtering desactivated ##"));
+	my_printf();
+#endif
+
 	// Setting Rx mode
-	state = receive();	
-	
-	if( state == 0 )
+	state = receive();
+
+	if (state == 0)
 	{
 		// Getting all packets received in wait
-		state = getPacket(wait);	
+		state = getPacket(wait);
 	}
 	return state;
 }
@@ -3271,7 +3310,7 @@ uint8_t sx1272_INSAT::receiveAll(uint32_t wait)
  Returns: bool that's 'true' if the packet is for the module and
 		  it's 'false' if the packet is not for the module.
 */
-bool	sx1272_INSAT::availableData()
+bool sx1272_INSAT::availableData()
 {
 	return availableData(MAX_TIMEOUT);
 }
@@ -3283,64 +3322,64 @@ bool	sx1272_INSAT::availableData()
  Parameters:
    wait: time to wait while there is no a valid header received.
 */
-bool	sx1272_INSAT::availableData(uint32_t wait)
+bool sx1272_INSAT::availableData(uint32_t wait)
 {
 	uint8_t value;
 	uint8_t header = 0;
 	bool forme = false;
-	unsigned long previous;	
-	
+	unsigned long previous;
+
 	// update attribute
 	_hreceived = false;
 
-	#if (SX1272_debug_mode > 0)
-		my_printf();
-		my_printf(F("Starting 'availableData'"));
-	#endif
+#if (SX1272_debug_mode > 0)
+	my_printf();
+	my_printf(F("Starting 'availableData'"));
+#endif
 
 	previous = (TIM6->CNT);
-	
-	if( _modem == LORA )
-	{ 
-		/// LoRa mode		
+
+	if (_modem == LORA)
+	{
+		/// LoRa mode
 		// read REG_IRQ_FLAGS
 		value = readRegister(REG_IRQ_FLAGS);
-		
+
 		// Wait to ValidHeader interrupt in REG_IRQ_FLAGS
-		while( (bitRead(value, 4) == 0) && ((TIM6->CNT)-previous < (unsigned long)wait) )
+		while ((bitRead(value, 4) == 0) && ((TIM6->CNT) - previous < (unsigned long)wait))
 		{
 			// read REG_IRQ_FLAGS
 			value = readRegister(REG_IRQ_FLAGS);
-			
+
 			// Condition to avoid an overflow (DO NOT REMOVE)
-			if( (TIM6->CNT) < previous )
+			if ((TIM6->CNT) < previous)
 			{
 				previous = (TIM6->CNT);
 			}
 		}
-		
+
 		// Check if ValidHeader was received
-		if( bitRead(value, 4) == 1 )
+		if (bitRead(value, 4) == 1)
 		{
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("## Valid Header received in LoRa mode ##"));
-			#endif
+#if (SX1272_debug_mode > 0)
+			my_printf(F("## Valid Header received in LoRa mode ##"));
+#endif
 			_hreceived = true;
-			while( (header == 0) && ((TIM6->CNT)-previous < (unsigned long)wait) )
-			{ 
+			while ((header == 0) && ((TIM6->CNT) - previous < (unsigned long)wait))
+			{
 				// Wait for the increment of the RX buffer pointer
 				header = readRegister(REG_FIFO_RX_uint8_t_ADDR);
-				
+
 				// Condition to avoid an overflow (DO NOT REMOVE)
-				if( (TIM6->CNT) < previous )
+				if ((TIM6->CNT) < previous)
 				{
 					previous = (TIM6->CNT);
 				}
 			}
-			
+
 			// If packet received: Read first uint8_t of the received packet
-			if( header != 0 )
-			{ 				
+			if (header != 0)
+			{
 				_destination = readRegister(REG_FIFO);
 			}
 		}
@@ -3348,10 +3387,10 @@ bool	sx1272_INSAT::availableData(uint32_t wait)
 		{
 			forme = false;
 			_hreceived = false;
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("** The timeout has expired **"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 0)
+			my_printf(F("** The timeout has expired **"));
+			my_printf();
+#endif
 		}
 	}
 	else
@@ -3360,21 +3399,21 @@ bool	sx1272_INSAT::availableData(uint32_t wait)
 		// read REG_IRQ_FLAGS2
 		value = readRegister(REG_IRQ_FLAGS2);
 		// Wait to Payload Ready interrupt
-		while( (bitRead(value, 5) == 0) && ((TIM6->CNT) - previous < wait) )
+		while ((bitRead(value, 5) == 0) && ((TIM6->CNT) - previous < wait))
 		{
 			value = readRegister(REG_IRQ_FLAGS2);
 			// Condition to avoid an overflow (DO NOT REMOVE)
-			if( (TIM6->CNT) < previous )
+			if ((TIM6->CNT) < previous)
 			{
 				previous = (TIM6->CNT);
 			}
-		}// end while (millis)
-		if( bitRead(value, 5) == 1 )	// something received
+		}							// end while (millis)
+		if (bitRead(value, 5) == 1) // something received
 		{
 			_hreceived = true;
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("## Valid Preamble detected in FSK mode ##"));
-			#endif
+#if (SX1272_debug_mode > 0)
+			my_printf(F("## Valid Preamble detected in FSK mode ##"));
+#endif
 			// Reading first uint8_t of the received packet
 			_destination = readRegister(REG_FIFO);
 		}
@@ -3382,16 +3421,16 @@ bool	sx1272_INSAT::availableData(uint32_t wait)
 		{
 			forme = false;
 			_hreceived = false;
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("** The timeout has expired **"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 0)
+			my_printf(F("** The timeout has expired **"));
+			my_printf();
+#endif
 
-       /*
+			/*
       if(bitRead(value, 5) == 1)
       {
         while(bitRead(value, 6) == 0)
-        { 
+        {
          my_printf(F("data: "));
          my_printf(readRegister(REG_FIFO),HEX);
          value = readRegister(REG_IRQ_FLAGS2);
@@ -3402,67 +3441,66 @@ bool	sx1272_INSAT::availableData(uint32_t wait)
       }*/
 		}
 	}
-	
-	
-	/* We use '_hreceived' because we need to ensure that '_destination' value 
+
+	/* We use '_hreceived' because we need to ensure that '_destination' value
 	 * is correctly updated and is not the '_destination' value from the
 	 * previously packet
 	 */
-	if( _hreceived == true )
-	{ 
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("## Checking destination ##"));
-			my_printf(F("Destination address = "));
-			my_printf(_destination,DEC);
-			my_printf(F("Node address = "));
-			my_printf(_nodeAddress,DEC);
-			my_printf(F("Broadcast address = "));
-			my_printf(BROADCAST_0,DEC);
-		#endif
-		
+	if (_hreceived == true)
+	{
+#if (SX1272_debug_mode > 0)
+		my_printf(F("## Checking destination ##"));
+		my_printf(F("Destination address = "));
+		my_printf(_destination, DEC);
+		my_printf(F("Node address = "));
+		my_printf(_nodeAddress, DEC);
+		my_printf(F("Broadcast address = "));
+		my_printf(BROADCAST_0, DEC);
+#endif
+
 		// Checking destination
-		if( (_destination == _nodeAddress) || (_destination == BROADCAST_0) )
+		if ((_destination == _nodeAddress) || (_destination == BROADCAST_0))
 		{ // LoRa or FSK mode
 			forme = true;
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("## Packet received is for me ##"));
-			#endif
+#if (SX1272_debug_mode > 0)
+			my_printf(F("## Packet received is for me ##"));
+#endif
 		}
 		else
 		{
 			forme = false;
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("## Packet received is not for me ##"));
-				my_printf((TIM6->CNT));
-			#endif
-			
+#if (SX1272_debug_mode > 0)
+			my_printf(F("## Packet received is not for me ##"));
+			my_printf((TIM6->CNT));
+#endif
+
 			// If it is not a correct destination address, then change to
 			// STANDBY to minimize power consumption
-			if( _modem == LORA )	
-			{ 
+			if (_modem == LORA)
+			{
 				// Setting standby LoRa mode
-				writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	
+				writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
 			}
 			else
-			{ 
+			{
 				// Setting standby FSK mode
-				writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	
-			} 
+				writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
+			}
 		}
 	}
 	else
-	{ 
+	{
 		// If timeout has expired, then change to
 		// STANDBY to minimize power consumption
-		if( _modem == LORA )
-		{				
+		if (_modem == LORA)
+		{
 			// Setting standby LoRa mode
-//~ 			writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	
+			//~ 			writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);
 		}
 		else
 		{
 			// Setting standby FSK mode
-			writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	
+			writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);
 		}
 	}
 	return forme;
@@ -3510,87 +3548,86 @@ int8_t sx1272_INSAT::getPacket(uint32_t wait)
 	unsigned long previous;
 	bool p_received = false;
 
-	#if (SX1272_debug_mode > 0)
-		my_printf();
-		my_printf(F("Starting 'getPacket'"));
-	#endif
+#if (SX1272_debug_mode > 0)
+	my_printf();
+	my_printf(F("Starting 'getPacket'"));
+#endif
 
 	previous = (TIM6->CNT);
-	
-	if( _modem == LORA )
+
+	if (_modem == LORA)
 	{
 		/// LoRa mode
 		// read REG_IRQ_FLAGS
 		value = readRegister(REG_IRQ_FLAGS);
-		
+
 		// Wait until the packet is received (RxDone flag) or the timeout expires
-		while( (bitRead(value, 6) == 0) && ((TIM6->CNT)-previous < (unsigned long)wait) )
+		while ((bitRead(value, 6) == 0) && ((TIM6->CNT) - previous < (unsigned long)wait))
 		{
 			value = readRegister(REG_IRQ_FLAGS);
-			
+
 			// Condition to avoid an overflow (DO NOT REMOVE)
-			if( (TIM6->CNT) < previous )
+			if ((TIM6->CNT) < previous)
 			{
 				previous = (TIM6->CNT);
 			}
 		}
 
 		// Check if 'RxDone' is true and 'PayloadCrcError' is correct
-		if( (bitRead(value, 6) == 1) && (bitRead(value, 5) == 0) )
-		{ 
+		if ((bitRead(value, 6) == 1) && (bitRead(value, 5) == 0))
+		{
 			// packet received & CRC correct
-			p_received = true;	// packet correctly received
+			p_received = true; // packet correctly received
 			_reception = CORRECT_PACKET;
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("## Packet correctly received in LoRa mode ##"));
-			#endif
+#if (SX1272_debug_mode > 0)
+			my_printf(F("## Packet correctly received in LoRa mode ##"));
+#endif
 		}
 		else
 		{
-			if( bitRead(value, 6) != 1 )
-			{ 
-				#if (SX1272_debug_mode > 0)
-					my_printf(F("NOT 'RxDone' flag"));
-				#endif
+			if (bitRead(value, 6) != 1)
+			{
+#if (SX1272_debug_mode > 0)
+				my_printf(F("NOT 'RxDone' flag"));
+#endif
 			}
-			
-			if( _CRC != CRC_ON )
-			{ 
-				#if (SX1272_debug_mode > 0)
-					my_printf(F("NOT 'CRC_ON' enabled"));
-				#endif
+
+			if (_CRC != CRC_ON)
+			{
+#if (SX1272_debug_mode > 0)
+				my_printf(F("NOT 'CRC_ON' enabled"));
+#endif
 			}
-			
-			if( (bitRead(value, 5) == 0) && (_CRC == CRC_ON) )
-			{ 
+
+			if ((bitRead(value, 5) == 0) && (_CRC == CRC_ON))
+			{
 				// CRC is correct
 				_reception = CORRECT_PACKET;
 			}
 			else
-			{ 
+			{
 				// CRC incorrect
 				_reception = INCORRECT_PACKET;
 				state = 3;
-				#if (SX1272_debug_mode > 0)
-					my_printf(F("** The CRC is incorrect **"));
-					my_printf();
-				#endif
+#if (SX1272_debug_mode > 0)
+				my_printf(F("** The CRC is incorrect **"));
+				my_printf();
+#endif
 			}
-		}			
-
+		}
 	}
 	else
-	{ 
+	{
 		/// FSK mode
 		value = readRegister(REG_IRQ_FLAGS2);
-    _reception = CORRECT_PACKET;
-    p_received = true;
+		_reception = CORRECT_PACKET;
+		p_received = true;
 
-    getRSSI();
-    //my_printf(F("RSSI: "));
-    //my_printf(_RSSI, DEC);
-    
-    delay_ms(500);// laid !
+		getRSSI();
+		//my_printf(F("RSSI: "));
+		//my_printf(_RSSI, DEC);
+
+		delay_ms(500); // laid !
 
 		/*
 		while( (bitRead(value, 2) == 0) && ((TIM6->CNT) - previous < wait) )
@@ -3603,8 +3640,8 @@ int8_t sx1272_INSAT::getPacket(uint32_t wait)
 			}
 		} // end while (millis)
     */
-      
-/*   
+
+		/*
 		if( bitRead(value, 2) == 1 )
 		{ // packet received
  			if( (bitRead(value, 1) == 1) && (_CRC == CRC_ON) )
@@ -3633,21 +3670,21 @@ int8_t sx1272_INSAT::getPacket(uint32_t wait)
 			#endif
 		}
 */
-   
-		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	// Setting standby FSK mode
+
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // Setting standby FSK mode
 	}
-	
-	/* If a new packet was received correctly, now the information must be 
-	 * filled inside the structures of the class 
+
+	/* If a new packet was received correctly, now the information must be
+	 * filled inside the structures of the class
 	 */
-	if( p_received == true )
-	{		
+	if (p_received == true)
+	{
 		// Store the packet
-		if( _modem == LORA )
+		if (_modem == LORA)
 		{
 			/// LoRa
 			// Setting address pointer in FIFO data buffer
-			writeRegister(REG_FIFO_ADDR_PTR, 0x00);	
+			writeRegister(REG_FIFO_ADDR_PTR, 0x00);
 			// Storing first uint8_t of the received packet
 			packet_received.dst = readRegister(REG_FIFO);
 		}
@@ -3655,10 +3692,10 @@ int8_t sx1272_INSAT::getPacket(uint32_t wait)
 		{
 			/// FSK
 			value = readRegister(REG_PACKET_CONFIG1);
-			if( (bitRead(value, 2) == 0) && (bitRead(value, 1) == 0) )
+			if ((bitRead(value, 2) == 0) && (bitRead(value, 1) == 0))
 			{
 				// Storing first uint8_t of the received packet
-				packet_received.dst = readRegister(REG_FIFO); 
+				packet_received.dst = readRegister(REG_FIFO);
 			}
 			else
 			{
@@ -3666,64 +3703,64 @@ int8_t sx1272_INSAT::getPacket(uint32_t wait)
 				packet_received.dst = _destination;
 			}
 		}
-		
+
 		// Reading second uint8_t of the received packet
 		// Reading third uint8_t of the received packet
 		// Reading fourth uint8_t of the received packet
 		packet_received.src = readRegister(REG_FIFO);
 		packet_received.packnum = readRegister(REG_FIFO);
 		packet_received.length = readRegister(REG_FIFO);
-		
+
 		// calculate the payload length
-		if( _modem == LORA )
+		if (_modem == LORA)
 		{
 			_payloadlength = packet_received.length - OFFSET_PAYLOADLENGTH;
 		}
-   else
-   {
-    if(packet_received.length>OFFSET_PAYLOADLENGTH) 
-      _payloadlength = packet_received.length - OFFSET_PAYLOADLENGTH;
-    else
-      _payloadlength=packet_received.length;
-   }
-		
-		// check if length is incorrect
-		if( packet_received.length > (MAX_LENGTH + 1) )
+		else
 		{
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("Corrupted packet, length must be less than 256"));
-			#endif
+			if (packet_received.length > OFFSET_PAYLOADLENGTH)
+				_payloadlength = packet_received.length - OFFSET_PAYLOADLENGTH;
+			else
+				_payloadlength = packet_received.length;
+		}
+
+		// check if length is incorrect
+		if (packet_received.length > (MAX_LENGTH + 1))
+		{
+#if (SX1272_debug_mode > 0)
+			my_printf(F("Corrupted packet, length must be less than 256"));
+#endif
 		}
 		else
-		{   
+		{
 			// Store payload in 'data'
-			for(unsigned int i = 0; i < _payloadlength; i++)
+			for (unsigned int i = 0; i < _payloadlength; i++)
 			{
-				packet_received.data[i] = readRegister(REG_FIFO); 
+				packet_received.data[i] = readRegister(REG_FIFO);
 			}
 			// Store 'retry'
 			packet_received.retry = readRegister(REG_FIFO);
-			
-			// Print the packet if debug_mode
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("## Packet received:"));
-				my_printf(packet_received.dst,HEX);			 	// Printing destination
+
+// Print the packet if debug_mode
+#if (SX1272_debug_mode > 0)
+			my_printf(F("## Packet received:"));
+			my_printf(packet_received.dst, HEX); // Printing destination
+			my_printf("|");
+			my_printf(packet_received.src, HEX); // Printing source
+			my_printf("|");
+			my_printf(packet_received.packnum, HEX); // Printing packet number
+			my_printf("|");
+			my_printf(packet_received.length, HEX); // Printing packet length
+			my_printf("|");
+			for (unsigned int i = 0; i < _payloadlength; i++)
+			{
+				my_printf(packet_received.data[i], HEX); // Printing payload
 				my_printf("|");
-				my_printf(packet_received.src,HEX);			 	// Printing source
-				my_printf("|");
-				my_printf(packet_received.packnum,HEX);			// Printing packet number
-				my_printf("|");
-				my_printf(packet_received.length,HEX);			// Printing packet length
-				my_printf("|");
-				for(unsigned int i = 0; i < _payloadlength; i++)
-				{
-					my_printf(packet_received.data[i],HEX);		// Printing payload
-					my_printf("|");
-				}
-				my_printf(packet_received.retry,HEX);			// Printing number retry
-				my_printf(F(" ##"));
-				my_printf();
-			#endif
+			}
+			my_printf(packet_received.retry, HEX); // Printing number retry
+			my_printf(F(" ##"));
+			my_printf();
+#endif
 			state_f = 0;
 		}
 	}
@@ -3731,32 +3768,32 @@ int8_t sx1272_INSAT::getPacket(uint32_t wait)
 	{
 		// if packet was NOT received
 		state_f = 1;
-		if( (_reception == INCORRECT_PACKET) && (_retries < _maxRetries) && (state != 3) )
+		if ((_reception == INCORRECT_PACKET) && (_retries < _maxRetries) && (state != 3))
 		{
 			_retries++;
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("## Retrying to send the last packet ##"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 0)
+			my_printf(F("## Retrying to send the last packet ##"));
+			my_printf();
+#endif
 		}
 	}
-	
+
 	// Setting address pointer in FIFO data buffer to 0x00 again
-	if( _modem == LORA )
+	if (_modem == LORA)
 	{
 		writeRegister(REG_FIFO_ADDR_PTR, 0x00);
 	}
-	
-	// Initializing flags	
-	clearFlags();	
-	
-	if( wait > MAX_WAIT )
+
+	// Initializing flags
+	clearFlags();
+
+	if (wait > MAX_WAIT)
 	{
 		state_f = -1;
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("** The timeout must be smaller than 12.5 seconds **"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 0)
+		my_printf(F("** The timeout must be smaller than 12.5 seconds **"));
+		my_printf();
+#endif
 	}
 
 	return state_f;
@@ -3775,31 +3812,31 @@ int8_t sx1272_INSAT::setDestination(uint8_t dest)
 {
 	int8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setDestination'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setDestination'"));
+#endif
 
 	state = 1;
-	_destination = dest; // Storing destination in a global variable
-	packet_sent.dst = dest;	 // Setting destination in packet structure
-	packet_sent.src = _nodeAddress; // Setting source in packet structure
-	packet_sent.packnum = _packetNumber;	// Setting packet number in packet structure
+	_destination = dest;				 // Storing destination in a global variable
+	packet_sent.dst = dest;				 // Setting destination in packet structure
+	packet_sent.src = _nodeAddress;		 // Setting source in packet structure
+	packet_sent.packnum = _packetNumber; // Setting packet number in packet structure
 	_packetNumber++;
 	state = 0;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf(F("## Destination "));
-		my_printf(_destination,HEX);
-		my_printf(F(" successfully set ##"));
-		my_printf(F("## Source "));
-		my_printf(packet_sent.src, DEC);
-		my_printf(F(" successfully set ##"));
-		my_printf(F("## Packet number "));
-		my_printf(packet_sent.packnum, DEC);
-		my_printf(F(" successfully set ##"));
-		my_printf();
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Destination "));
+	my_printf(_destination, HEX);
+	my_printf(F(" successfully set ##"));
+	my_printf(F("## Source "));
+	my_printf(packet_sent.src, DEC);
+	my_printf(F(" successfully set ##"));
+	my_printf(F("## Packet number "));
+	my_printf(packet_sent.packnum, DEC);
+	my_printf(F(" successfully set ##"));
+	my_printf();
+#endif
 	return state;
 }
 
@@ -3816,53 +3853,52 @@ uint8_t sx1272_INSAT::setTimeout()
 	uint8_t state = 2;
 	uint16_t delay;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setTimeout'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setTimeout'"));
+#endif
 
 	state = 1;
-	if( _modem == LORA )
+	if (_modem == LORA)
 	{
 		// calculate 'delay'
-		delay = ((0.1*_sendTime) + 1);		
-	
+		delay = ((0.1 * _sendTime) + 1);
+
 		float Tpacket = timeOnAir();
-	
+
 		// calculate final send/receive timeout adding an offset and a random value
-		_sendTime = (uint16_t) Tpacket + (rand()%delay) + 1000;
-	
-		#if (SX1272_debug_mode > 2)		
-			my_printf(F("Tsym (ms):"));
-			my_printf(Tsym);
-			my_printf(F("Tpreamble (ms):"));
-			my_printf(Tpreamble);
-			my_printf(F("payloadSymbNb:"));
-			my_printf(payloadSymbNb);
-			my_printf(F("Tpacket:"));
-			my_printf(Tpacket);
-		#endif
-		
+		_sendTime = (uint16_t)Tpacket + (rand() % delay) + 1000;
+
+#if (SX1272_debug_mode > 2)
+		my_printf(F("Tsym (ms):"));
+		my_printf(Tsym);
+		my_printf(F("Tpreamble (ms):"));
+		my_printf(Tpreamble);
+		my_printf(F("payloadSymbNb:"));
+		my_printf(payloadSymbNb);
+		my_printf(F("Tpacket:"));
+		my_printf(Tpacket);
+#endif
+
 		// update state
 		state = 0;
 	}
-	else 
+	else
 	{
 		// update state
 		_sendTime = MAX_TIMEOUT;
-		
+
 		// update state
 		state = 0;
 	}
 
-	#if (SX1272_debug_mode > 1)	
-		my_printf(F("Timeout to send/receive is: "));
-		my_printf(_sendTime, DEC);
-	#endif	
-	
+#if (SX1272_debug_mode > 1)
+	my_printf(F("Timeout to send/receive is: "));
+	my_printf(_sendTime, DEC);
+#endif
+
 	return state;
 }
-
 
 /*
  Function: It gets the theoretical value of the time-on-air of the packet
@@ -3871,7 +3907,7 @@ uint8_t sx1272_INSAT::setTimeout()
 */
 float sx1272_INSAT::timeOnAir()
 {
-	return timeOnAir( _payloadlength );
+	return timeOnAir(_payloadlength);
 }
 
 /*
@@ -3879,7 +3915,7 @@ float sx1272_INSAT::timeOnAir()
  Link: http://www.semtech.com/images/datasheet/sx1272.pdf
  Returns: Float that determines the time-on-air
 */
-float sx1272_INSAT::timeOnAir( uint16_t payloadlength )
+float sx1272_INSAT::timeOnAir(uint16_t payloadlength)
 {
 	float BW;
 	float DE = 0;
@@ -3887,29 +3923,36 @@ float sx1272_INSAT::timeOnAir( uint16_t payloadlength )
 	float PL = payloadlength + OFFSET_PAYLOADLENGTH;
 	float H = _header;
 	float CR = _codingRate;
-	
+
 	// Dara rate optimization enabled if SF is 11 or 12
-	if( SF > 10) DE = 1.0;
-	else DE = 0.0;
-		
+	if (SF > 10)
+		DE = 1.0;
+	else
+		DE = 0.0;
+
 	// payload correction
-	if( payloadlength == 0 ) PL = 255;
+	if (payloadlength == 0)
+		PL = 255;
 
 	// Bandwidth value setting
-	if( _bandwidth == BW_125 ) 		BW = 125.0;
-	else if( _bandwidth == BW_250 ) BW = 250.0;
-	else if( _bandwidth == BW_500 ) BW = 500.0;
-	else BW = 125.0;
+	if (_bandwidth == BW_125)
+		BW = 125.0;
+	else if (_bandwidth == BW_250)
+		BW = 250.0;
+	else if (_bandwidth == BW_500)
+		BW = 500.0;
+	else
+		BW = 125.0;
 
 	// Calculation steps:
-	float Tsym = pow(2,SF)/(BW); // ms
-	float Tpreamble = (8+4.25)*Tsym;// ms
-	float argument1 = ceil( (8.0*PL-4.0*SF+28.0+16.0-20.0*H)/(4.0*(SF-2.0*DE)) )*(CR+4.0);
+	float Tsym = pow(2, SF) / (BW);		 // ms
+	float Tpreamble = (8 + 4.25) * Tsym; // ms
+	float argument1 = ceil((8.0 * PL - 4.0 * SF + 28.0 + 16.0 - 20.0 * H) / (4.0 * (SF - 2.0 * DE))) * (CR + 4.0);
 	float argument2 = 0;
-	float payloadSymbNb = 8 + max( argument1, argument2);
+	float payloadSymbNb = 8 + max(argument1, argument2);
 	float Tpayload = payloadSymbNb * Tsym;
-	float Tpacket = Tpreamble + Tpayload;	
-	
+	float Tpacket = Tpreamble + Tpayload;
+
 	return Tpacket;
 }
 
@@ -3918,12 +3961,12 @@ float sx1272_INSAT::max(float argument1, float argument2)
 	if (argument1 > argument2)
 	{
 		return argument1;
-	}else
+	}
+	else
 	{
 		return argument2;
 	}
 }
-
 
 /*
  Function: It sets a char array payload packet in a packet struct.
@@ -3938,18 +3981,18 @@ uint8_t sx1272_INSAT::setPayload(char *payload)
 	uint8_t state_f = 2;
 	uint16_t length16;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setPayload'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setPayload'"));
+#endif
 
 	state = 1;
 	length16 = (uint16_t)strlen(payload);
 	state = truncPayload(length16);
-	if( state == 0 )
+	if (state == 0)
 	{
 		// fill data field until the end of the string
-		for(unsigned int i = 0; i < _payloadlength; i++)
+		for (unsigned int i = 0; i < _payloadlength; i++)
 		{
 			packet_sent.data[i] = payload[i];
 		}
@@ -3958,21 +4001,21 @@ uint8_t sx1272_INSAT::setPayload(char *payload)
 	{
 		state_f = state;
 	}
-	
+
 	// In the case of FSK mode, the max payload is more restrictive
-	if( ( _modem == FSK ) && ( _payloadlength > MAX_PAYLOAD_FSK ) )
+	if ((_modem == FSK) && (_payloadlength > MAX_PAYLOAD_FSK))
 	{
 		_payloadlength = MAX_PAYLOAD_FSK;
 		state = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("In FSK, payload length must be less than 60 uint8_ts."));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("In FSK, payload length must be less than 60 uint8_ts."));
+		my_printf();
+#endif
 	}
-	
+
 	// Set length with the actual counter value
 	// Setting packet length in packet structure
-	state_f = setPacketLength();	
+	state_f = setPacketLength();
 	return state_f;
 }
 
@@ -3987,27 +4030,27 @@ uint8_t sx1272_INSAT::setPayload(uint8_t *payload)
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setPayload'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setPayload'"));
+#endif
 
 	state = 1;
-	if( ( _modem == FSK ) && ( _payloadlength > MAX_PAYLOAD_FSK ) )
+	if ((_modem == FSK) && (_payloadlength > MAX_PAYLOAD_FSK))
 	{
 		_payloadlength = MAX_PAYLOAD_FSK;
 		state = 1;
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("In FSK, payload length must be less than 60 uint8_ts."));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 1)
+		my_printf(F("In FSK, payload length must be less than 60 uint8_ts."));
+		my_printf();
+#endif
 	}
-	for(unsigned int i = 0; i < _payloadlength; i++)
+	for (unsigned int i = 0; i < _payloadlength; i++)
 	{
-		packet_sent.data[i] = payload[i];	// Storing payload in packet structure
+		packet_sent.data[i] = payload[i]; // Storing payload in packet structure
 	}
 	// set length with the actual counter value
-    state = setPacketLength();	// Setting packet length in packet structure
+	state = setPacketLength(); // Setting packet length in packet structure
 	return state;
 }
 
@@ -4023,26 +4066,25 @@ uint8_t sx1272_INSAT::setPacket(uint8_t dest, char *payload)
 	int8_t state = 2;
 	uint8_t st0;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setPacket'"));
-	#endif
-	
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setPacket'"));
+#endif
+
 	// Save the previous status
-	st0 = readRegister(REG_OP_MODE);	
+	st0 = readRegister(REG_OP_MODE);
 	// Initializing flags
-	clearFlags();	
-	
+	clearFlags();
+
 	// Updating incorrect value
-	_reception = CORRECT_PACKET;	
-	
-	
+	_reception = CORRECT_PACKET;
+
 	if (_retries == 0)
-	{ 
+	{
 		// Updating these values only if it is the first try
 		// Setting destination in packet structure
-		state = setDestination(dest);	
-		if( state == 0 )
+		state = setDestination(dest);
+		if (state == 0)
 		{
 			state = setPayload(payload);
 		}
@@ -4051,52 +4093,52 @@ uint8_t sx1272_INSAT::setPacket(uint8_t dest, char *payload)
 	{
 		state = setPacketLength();
 		packet_sent.retry = _retries;
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("** Retrying to send last packet "));
-			my_printf(_retries, DEC);
-			my_printf(F(" time **"));
-		#endif
+#if (SX1272_debug_mode > 0)
+		my_printf(F("** Retrying to send last packet "));
+		my_printf(_retries, DEC);
+		my_printf(F(" time **"));
+#endif
 	}
-	
+
 	// Setting address pointer in FIFO data buffer
-	writeRegister(REG_FIFO_TX_BASE_ADDR, 0x00);  
-	writeRegister(REG_FIFO_ADDR_PTR, 0x00);  
-	if( state == 0 )
+	writeRegister(REG_FIFO_TX_BASE_ADDR, 0x00);
+	writeRegister(REG_FIFO_ADDR_PTR, 0x00);
+	if (state == 0)
 	{
 		state = 1;
 		// Writing packet to send in FIFO
-		writeRegister(REG_FIFO, packet_sent.dst); 		// Writing the destination in FIFO
-		writeRegister(REG_FIFO, packet_sent.src);		// Writing the source in FIFO
-		writeRegister(REG_FIFO, packet_sent.packnum);	// Writing the packet number in FIFO
-		writeRegister(REG_FIFO, packet_sent.length); 	// Writing the packet length in FIFO
-		for( uint16_t i = 0; i < _payloadlength; i++)
+		writeRegister(REG_FIFO, packet_sent.dst);	  // Writing the destination in FIFO
+		writeRegister(REG_FIFO, packet_sent.src);	  // Writing the source in FIFO
+		writeRegister(REG_FIFO, packet_sent.packnum); // Writing the packet number in FIFO
+		writeRegister(REG_FIFO, packet_sent.length);  // Writing the packet length in FIFO
+		for (uint16_t i = 0; i < _payloadlength; i++)
 		{
-			writeRegister(REG_FIFO, packet_sent.data[i]);  // Writing the payload in FIFO
+			writeRegister(REG_FIFO, packet_sent.data[i]); // Writing the payload in FIFO
 		}
-		writeRegister(REG_FIFO, packet_sent.retry);		// Writing the number retry in FIFO
+		writeRegister(REG_FIFO, packet_sent.retry); // Writing the number retry in FIFO
 		state = 0;
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("## Packet set and written in FIFO ##"));
-			// Print the complete packet if debug_mode
-			my_printf(F("## Packet to send: "));
-			my_printf(packet_sent.dst,HEX);			 	// Printing destination
+#if (SX1272_debug_mode > 0)
+		my_printf(F("## Packet set and written in FIFO ##"));
+		// Print the complete packet if debug_mode
+		my_printf(F("## Packet to send: "));
+		my_printf(packet_sent.dst, HEX); // Printing destination
+		my_printf("|");
+		my_printf(packet_sent.src, HEX); // Printing source
+		my_printf("|");
+		my_printf(packet_sent.packnum, HEX); // Printing packet number
+		my_printf("|");
+		my_printf(packet_sent.length, HEX); // Printing packet length
+		my_printf("|");
+		for (uint16_t i = 0; i < _payloadlength; i++)
+		{
+			my_printf(packet_sent.data[i], HEX); // Printing payload
 			my_printf("|");
-			my_printf(packet_sent.src,HEX);			 	// Printing source
-			my_printf("|");
-			my_printf(packet_sent.packnum,HEX);			// Printing packet number
-			my_printf("|");
-			my_printf(packet_sent.length,HEX);			// Printing packet length
-			my_printf("|");
-			for( uint16_t i = 0; i < _payloadlength; i++)
-			{
-				my_printf(packet_sent.data[i],HEX);		// Printing payload
-				my_printf("|");
-			}
-			my_printf(packet_sent.retry,HEX);			// Printing retry number
-			my_printf(F(" ##"));
-		#endif
+		}
+		my_printf(packet_sent.retry, HEX); // Printing retry number
+		my_printf(F(" ##"));
+#endif
 	}
-	writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
 	return state;
 }
 
@@ -4112,28 +4154,28 @@ uint8_t sx1272_INSAT::setPacket(uint8_t dest, uint8_t *payload)
 	int8_t state = 2;
 	uint8_t st0;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'setPacket'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'setPacket'"));
+#endif
 
-	st0 = readRegister(REG_OP_MODE);	// Save the previous status
-	clearFlags();	// Initializing flags
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
+	clearFlags();					 // Initializing flags
 
-	if( _modem == LORA )
-	{ // LoRa mode
-		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	// Stdby LoRa mode to write in FIFO
+	if (_modem == LORA)
+	{												   // LoRa mode
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // Stdby LoRa mode to write in FIFO
 	}
 	else
-	{ // FSK mode
-		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	// Stdby FSK mode to write in FIFO
+	{												  // FSK mode
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // Stdby FSK mode to write in FIFO
 	}
 
-	_reception = CORRECT_PACKET;	// Updating incorrect value to send a packet (old or new)
-	if(_retries == 0)
-	{ // Sending new packet
-		state = setDestination(dest);	// Setting destination in packet structure
-		if( state == 0 )
+	_reception = CORRECT_PACKET; // Updating incorrect value to send a packet (old or new)
+	if (_retries == 0)
+	{								  // Sending new packet
+		state = setDestination(dest); // Setting destination in packet structure
+		if (state == 0)
 		{
 			state = setPayload(payload);
 		}
@@ -4142,50 +4184,50 @@ uint8_t sx1272_INSAT::setPacket(uint8_t dest, uint8_t *payload)
 	{
 		state = setPacketLength();
 		packet_sent.retry = _retries;
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("** Retrying to send last packet "));
-			my_printf(_retries, DEC);
-			my_printf(F(" time **"));
-		#endif
+#if (SX1272_debug_mode > 0)
+		my_printf(F("** Retrying to send last packet "));
+		my_printf(_retries, DEC);
+		my_printf(F(" time **"));
+#endif
 	}
 	writeRegister(REG_FIFO_TX_BASE_ADDR, 0x00);
-	writeRegister(REG_FIFO_ADDR_PTR, 0x00);  // Setting address pointer in FIFO data buffer
-	if( state == 0 )
+	writeRegister(REG_FIFO_ADDR_PTR, 0x00); // Setting address pointer in FIFO data buffer
+	if (state == 0)
 	{
 		state = 1;
 		// Writing packet to send in FIFO
-		writeRegister(REG_FIFO, packet_sent.dst); 		// Writing the destination in FIFO
-		writeRegister(REG_FIFO, packet_sent.src);		// Writing the source in FIFO
-		writeRegister(REG_FIFO, packet_sent.packnum);	// Writing the packet number in FIFO
-		writeRegister(REG_FIFO, packet_sent.length); 	// Writing the packet length in FIFO
-		for(unsigned int i = 0; i < _payloadlength; i++)
+		writeRegister(REG_FIFO, packet_sent.dst);	  // Writing the destination in FIFO
+		writeRegister(REG_FIFO, packet_sent.src);	  // Writing the source in FIFO
+		writeRegister(REG_FIFO, packet_sent.packnum); // Writing the packet number in FIFO
+		writeRegister(REG_FIFO, packet_sent.length);  // Writing the packet length in FIFO
+		for (unsigned int i = 0; i < _payloadlength; i++)
 		{
-			writeRegister(REG_FIFO, packet_sent.data[i]);  // Writing the payload in FIFO
+			writeRegister(REG_FIFO, packet_sent.data[i]); // Writing the payload in FIFO
 		}
-		writeRegister(REG_FIFO, packet_sent.retry);		// Writing the number retry in FIFO
+		writeRegister(REG_FIFO, packet_sent.retry); // Writing the number retry in FIFO
 		state = 0;
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("## Packet set and written in FIFO ##"));
-			// Print the complete packet if debug_mode
-			my_printf(F("## Packet to send: "));
-			my_printf(packet_sent.dst,HEX);			 	// Printing destination
+#if (SX1272_debug_mode > 0)
+		my_printf(F("## Packet set and written in FIFO ##"));
+		// Print the complete packet if debug_mode
+		my_printf(F("## Packet to send: "));
+		my_printf(packet_sent.dst, HEX); // Printing destination
+		my_printf("|");
+		my_printf(packet_sent.src, HEX); // Printing source
+		my_printf("|");
+		my_printf(packet_sent.packnum, HEX); // Printing packet number
+		my_printf("|");
+		my_printf(packet_sent.length, HEX); // Printing packet length
+		my_printf("|");
+		for (unsigned int i = 0; i < _payloadlength; i++)
+		{
+			my_printf(packet_sent.data[i], HEX); // Printing payload
 			my_printf("|");
-			my_printf(packet_sent.src,HEX);			 	// Printing source
-			my_printf("|");
-			my_printf(packet_sent.packnum,HEX);			// Printing packet number
-			my_printf("|");
-			my_printf(packet_sent.length,HEX);			// Printing packet length
-			my_printf("|");
-			for(unsigned int i = 0; i < _payloadlength; i++)
-			{
-				my_printf(packet_sent.data[i],HEX);		// Printing payload
-				my_printf("|");
-			}
-			my_printf(packet_sent.retry,HEX);			// Printing retry number
-			my_printf(F(" ##"));
-		#endif
+		}
+		my_printf(packet_sent.retry, HEX); // Printing retry number
+		my_printf(F(" ##"));
+#endif
 	}
-	writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
+	writeRegister(REG_OP_MODE, st0); // Getting back to previous status
 	return state;
 }
 
@@ -4227,29 +4269,29 @@ uint8_t sx1272_INSAT::sendWithTimeout(uint32_t wait)
 	uint8_t value = 0x00;
 	unsigned long previous;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendWithTimeout'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendWithTimeout'"));
+#endif
 
 	// wait to TxDone flag
 	previous = (TIM6->CNT);
-	if( _modem == LORA )
-	{ 
+	if (_modem == LORA)
+	{
 		/// LoRa mode
 		// Initializing flags
-		clearFlags();	
+		clearFlags();
 		// LORA mode - Tx
-		writeRegister(REG_OP_MODE, LORA_TX_MODE); 
+		writeRegister(REG_OP_MODE, LORA_TX_MODE);
 
 		value = readRegister(REG_IRQ_FLAGS);
-		
+
 		// Wait until the packet is sent (TX Done flag) or the timeout expires
 		while ((bitRead(value, 3) == 0) && ((TIM6->CNT) - previous < wait))
 		{
 			value = readRegister(REG_IRQ_FLAGS);
 			// Condition to avoid an overflow (DO NOT REMOVE)
-			if( (TIM6->CNT) < previous )
+			if ((TIM6->CNT) < previous)
 			{
 				previous = (TIM6->CNT);
 			}
@@ -4257,53 +4299,53 @@ uint8_t sx1272_INSAT::sendWithTimeout(uint32_t wait)
 		state = 1;
 	}
 	else
-	{ 
-    // Initializing flags
+	{
+		// Initializing flags
 		/// FSK mode
-		writeRegister(REG_OP_MODE, FSK_TX_MODE);  // FSK mode - Tx
+		writeRegister(REG_OP_MODE, FSK_TX_MODE); // FSK mode - Tx
 
 		value = readRegister(REG_IRQ_FLAGS2);
 		// Wait until the packet is sent (Packet Sent flag) or the timeout expires
 		while ((bitRead(value, 3) == 0) && ((TIM6->CNT) - previous < wait))
 		{
 			value = readRegister(REG_IRQ_FLAGS2);
-			
+
 			// Condition to avoid an overflow (DO NOT REMOVE)
-			if( (TIM6->CNT) < previous )
+			if ((TIM6->CNT) < previous)
 			{
 				previous = (TIM6->CNT);
 			}
 		}
 		state = 1;
 	}
-	if( bitRead(value, 3) == 1 )
+	if (bitRead(value, 3) == 1)
 	{
-		state = 0;	// Packet successfully sent
-		#if (SX1272_debug_mode > 1)
-			my_printf(F("## Packet successfully sent ##"));
-			my_printf();
-		#endif
+		state = 0; // Packet successfully sent
+#if (SX1272_debug_mode > 1)
+		my_printf(F("## Packet successfully sent ##"));
+		my_printf();
+#endif
 	}
 	else
 	{
-		if( state == 1 )
+		if (state == 1)
 		{
-			#if (SX1272_debug_mode > 1)
-				my_printf(F("** Timeout has expired **"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 1)
+			my_printf(F("** Timeout has expired **"));
+			my_printf();
+#endif
 		}
 		else
 		{
-			#if (SX1272_debug_mode > 1)
-				my_printf(F("** There has been an error and packet has not been sent **"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 1)
+			my_printf(F("** There has been an error and packet has not been sent **"));
+			my_printf();
+#endif
 		}
 	}
-	
+
 	// Initializing flags
-	clearFlags();		
+	clearFlags();
 	return state;
 }
 
@@ -4326,9 +4368,9 @@ uint8_t sx1272_INSAT::sendPacketMAXTimeout(uint8_t dest, char *payload)
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketMAXTimeout(	uint8_t dest,  
-											uint8_t *payload, 
-											uint16_t length16)
+uint8_t sx1272_INSAT::sendPacketMAXTimeout(uint8_t dest,
+										   uint8_t *payload,
+										   uint16_t length16)
 {
 	return sendPacketTimeout(dest, payload, length16, MAX_TIMEOUT);
 }
@@ -4344,18 +4386,18 @@ uint8_t sx1272_INSAT::sendPacketTimeout(uint8_t dest, char *payload)
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeout'"));
-		my_printf(F("Passe dans sendPacketTimeout(uint8_t dest, char *payload)"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeout'"));
+	my_printf(F("Passe dans sendPacketTimeout(uint8_t dest, char *payload)"));
+#endif
 
 	// Setting a packet with 'dest' destination address, 'payload' data field
 	// and writing it in FIFO.
-	state = setPacket(dest, payload);	
-	if (state == 0)								
+	state = setPacket(dest, payload);
+	if (state == 0)
 	{
-		state = sendWithTimeout();	// Sending the packet
+		state = sendWithTimeout(); // Sending the packet
 	}
 	return state;
 }
@@ -4367,34 +4409,34 @@ uint8_t sx1272_INSAT::sendPacketTimeout(uint8_t dest, char *payload)
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketTimeout(	uint8_t dest, 
-										uint8_t *payload, 
+uint8_t sx1272_INSAT::sendPacketTimeout(uint8_t dest,
+										uint8_t *payload,
 										uint16_t length16)
 {
 	uint8_t state = 2;
 	uint8_t state_f = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeout'"));
-		my_printf(F("Passe dans sendPacketTimeout(uint8_t dest, uint8_t *payload, uint16_t length16)"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeout'"));
+	my_printf(F("Passe dans sendPacketTimeout(uint8_t dest, uint8_t *payload, uint16_t length16)"));
+#endif
 
 	state = truncPayload(length16);
-	if( state == 0 )
+	if (state == 0)
 	{
-		state_f = setPacket(dest, payload);	// Setting a packet with 'dest' destination
-	}												// and writing it in FIFO.
+		state_f = setPacket(dest, payload); // Setting a packet with 'dest' destination
+	}										// and writing it in FIFO.
 	else
 	{
 		state_f = state;
 	}
-	if( state_f == 0 )
+	if (state_f == 0)
 	{
-		state_f = sendWithTimeout();	// Sending the packet
+		state_f = sendWithTimeout(); // Sending the packet
 	}
 	return state_f;
-} 
+}
 
 /*
  Function: Configures the module to transmit information.
@@ -4407,16 +4449,16 @@ uint8_t sx1272_INSAT::sendPacketTimeout(uint8_t dest, char *payload, uint32_t wa
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeout'"));
-		my_printf(F("Passe dans sendPacketTimeout(uint8_t dest, char *payload, uint32_t wait)"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeout'"));
+	my_printf(F("Passe dans sendPacketTimeout(uint8_t dest, char *payload, uint32_t wait)"));
+#endif
 
-	state = setPacket(dest, payload);	// Setting a packet with 'dest' destination
-	if (state == 0)								// and writing it in FIFO.
+	state = setPacket(dest, payload); // Setting a packet with 'dest' destination
+	if (state == 0)					  // and writing it in FIFO.
 	{
-		state = sendWithTimeout(wait);	// Sending the packet
+		state = sendWithTimeout(wait); // Sending the packet
 	}
 	return state;
 }
@@ -4428,32 +4470,32 @@ uint8_t sx1272_INSAT::sendPacketTimeout(uint8_t dest, char *payload, uint32_t wa
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketTimeout(	uint8_t dest, 
-										uint8_t *payload, 
-										uint16_t length16, 
+uint8_t sx1272_INSAT::sendPacketTimeout(uint8_t dest,
+										uint8_t *payload,
+										uint16_t length16,
 										uint32_t wait)
 {
 	uint8_t state = 2;
 	uint8_t state_f = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeout'"));
-		my_printf(F("Passe dans sendPacketTimeout(uint8_t dest, uint8_t *payload, uint16_t length16, uint32_t wait)"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeout'"));
+	my_printf(F("Passe dans sendPacketTimeout(uint8_t dest, uint8_t *payload, uint16_t length16, uint32_t wait)"));
+#endif
 
 	state = truncPayload(length16);
-	if( state == 0 )
+	if (state == 0)
 	{
-		state_f = setPacket(dest, payload);	// Setting a packet with 'dest' destination
+		state_f = setPacket(dest, payload); // Setting a packet with 'dest' destination
 	}
 	else
 	{
 		state_f = state;
 	}
-	if( state_f == 0 )								// and writing it in FIFO.
+	if (state_f == 0) // and writing it in FIFO.
 	{
-		state_f = sendWithTimeout(wait);	// Sending the packet
+		state_f = sendWithTimeout(wait); // Sending the packet
 	}
 	return state_f;
 }
@@ -4477,9 +4519,9 @@ uint8_t sx1272_INSAT::sendPacketMAXTimeoutACK(uint8_t dest, char *payload)
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketMAXTimeoutACK(uint8_t dest, 
-											uint8_t *payload, 
-											uint16_t length16)
+uint8_t sx1272_INSAT::sendPacketMAXTimeoutACK(uint8_t dest,
+											  uint8_t *payload,
+											  uint16_t length16)
 {
 	return sendPacketTimeoutACK(dest, payload, length16, MAX_TIMEOUT);
 }
@@ -4503,25 +4545,25 @@ uint8_t sx1272_INSAT::sendPacketTimeoutACK(uint8_t dest, char *payload)
 	uint8_t state = 2;
 	uint8_t state_f = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeoutACK'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeoutACK'"));
+#endif
 
-	state = sendPacketTimeout(dest, payload);	// Sending packet to 'dest' destination
-	if( state == 0 )
+	state = sendPacketTimeout(dest, payload); // Sending packet to 'dest' destination
+	if (state == 0)
 	{
-		state = receive();	// Setting Rx mode to wait an ACK
+		state = receive(); // Setting Rx mode to wait an ACK
 	}
 	else
 	{
 		state_f = state;
 	}
-	if( state == 0 )
+	if (state == 0)
 	{
-		if( availableData() )
+		if (availableData())
 		{
-			state_f = getACK();	// Getting ACK
+			state_f = getACK(); // Getting ACK
 		}
 		else
 		{
@@ -4551,35 +4593,35 @@ uint8_t sx1272_INSAT::sendPacketTimeoutACK(uint8_t dest, char *payload)
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketTimeoutACK(	uint8_t dest, 
-											uint8_t *payload, 
-											uint16_t length16)
+uint8_t sx1272_INSAT::sendPacketTimeoutACK(uint8_t dest,
+										   uint8_t *payload,
+										   uint16_t length16)
 {
 	uint8_t state = 2;
 	uint8_t state_f = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeoutACK'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeoutACK'"));
+#endif
 
 	// Sending packet to 'dest' destination
 	state = sendPacketTimeout(dest, payload, length16);
 
 	// Trying to receive the ACK
-	if( state == 0 )
+	if (state == 0)
 	{
-		state = receive();	// Setting Rx mode to wait an ACK
+		state = receive(); // Setting Rx mode to wait an ACK
 	}
 	else
 	{
 		state_f = state;
 	}
-	if( state == 0 )
+	if (state == 0)
 	{
-		if( availableData() )
+		if (availableData())
 		{
-			state_f = getACK();	// Getting ACK
+			state_f = getACK(); // Getting ACK
 		}
 		else
 		{
@@ -4609,32 +4651,32 @@ uint8_t sx1272_INSAT::sendPacketTimeoutACK(	uint8_t dest,
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketTimeoutACK(	uint8_t dest, 
-											char *payload,
-											uint32_t wait)
+uint8_t sx1272_INSAT::sendPacketTimeoutACK(uint8_t dest,
+										   char *payload,
+										   uint32_t wait)
 {
 	uint8_t state = 2;
 	uint8_t state_f = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeoutACK'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeoutACK'"));
+#endif
 
-	state = sendPacketTimeout(dest, payload, wait);	// Sending packet to 'dest' destination
-	if( state == 0 )
+	state = sendPacketTimeout(dest, payload, wait); // Sending packet to 'dest' destination
+	if (state == 0)
 	{
-		state = receive();	// Setting Rx mode to wait an ACK
+		state = receive(); // Setting Rx mode to wait an ACK
 	}
 	else
 	{
 		state_f = 1;
 	}
-	if( state == 0 )
+	if (state == 0)
 	{
-		if( availableData() )
+		if (availableData())
 		{
-			state_f = getACK();	// Getting ACK
+			state_f = getACK(); // Getting ACK
 		}
 		else
 		{
@@ -4663,33 +4705,33 @@ uint8_t sx1272_INSAT::sendPacketTimeoutACK(	uint8_t dest,
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketTimeoutACK(	uint8_t dest, 
-											uint8_t *payload, 
-											uint16_t length16, 
-											uint32_t wait)
+uint8_t sx1272_INSAT::sendPacketTimeoutACK(uint8_t dest,
+										   uint8_t *payload,
+										   uint16_t length16,
+										   uint32_t wait)
 {
 	uint8_t state = 2;
 	uint8_t state_f = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeoutACK'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeoutACK'"));
+#endif
 
-	state = sendPacketTimeout(dest, payload, length16, wait);	// Sending packet to 'dest' destination
-	if( state == 0 )
+	state = sendPacketTimeout(dest, payload, length16, wait); // Sending packet to 'dest' destination
+	if (state == 0)
 	{
-		state = receive();	// Setting Rx mode to wait an ACK
+		state = receive(); // Setting Rx mode to wait an ACK
 	}
 	else
 	{
 		state_f = 1;
 	}
-	if( state == 0 )
+	if (state == 0)
 	{
-		if( availableData() )
+		if (availableData())
 		{
-			state_f = getACK();	// Getting ACK
+			state_f = getACK(); // Getting ACK
 		}
 		else
 		{
@@ -4715,7 +4757,7 @@ uint8_t sx1272_INSAT::getACK()
 
 /*
  Function: It gets and stores an ACK if it is received, before ending 'wait' time.
- Returns: Integer that determines if there has been any error 
+ Returns: Integer that determines if there has been any error
    state = 8  --> The ACK lost
    state = 7  --> The ACK destination incorrectly received
    state = 6  --> The ACK source incorrectly received
@@ -4735,31 +4777,31 @@ uint8_t sx1272_INSAT::getACK(uint32_t wait)
 	unsigned long previous;
 	bool a_received = false;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getACK'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getACK'"));
+#endif
 
-    previous = (TIM6->CNT);
+	previous = (TIM6->CNT);
 
-	if( _modem == LORA )
+	if (_modem == LORA)
 	{ // LoRa mode
-	    value = readRegister(REG_IRQ_FLAGS);
+		value = readRegister(REG_IRQ_FLAGS);
 		// Wait until the ACK is received (RxDone flag) or the timeout expires
 		while ((bitRead(value, 6) == 0) && ((TIM6->CNT) - previous < wait))
 		{
 			value = readRegister(REG_IRQ_FLAGS);
-			if( (TIM6->CNT) < previous )
+			if ((TIM6->CNT) < previous)
 			{
 				previous = (TIM6->CNT);
 			}
 		}
-		if( bitRead(value, 6) == 1 )
+		if (bitRead(value, 6) == 1)
 		{ // ACK received
 			a_received = true;
 		}
 		// Standby para minimizar el consumo
-		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE);	// Setting standby LoRa mode
+		writeRegister(REG_OP_MODE, LORA_STANDBY_MODE); // Setting standby LoRa mode
 	}
 	else
 	{ // FSK mode
@@ -4768,22 +4810,22 @@ uint8_t sx1272_INSAT::getACK(uint32_t wait)
 		while ((bitRead(value, 2) == 0) && ((TIM6->CNT) - previous < wait))
 		{
 			value = readRegister(REG_IRQ_FLAGS2);
-			if( (TIM6->CNT) < previous )
+			if ((TIM6->CNT) < previous)
 			{
 				previous = (TIM6->CNT);
 			}
 		}
-		if( bitRead(value, 2) == 1 )
+		if (bitRead(value, 2) == 1)
 		{ // ACK received
 			a_received = true;
 		}
 		// Standby para minimizar el consumo
-		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE);	// Setting standby FSK mode
+		writeRegister(REG_OP_MODE, FSK_STANDBY_MODE); // Setting standby FSK mode
 	}
 
-	if( a_received )
+	if (a_received)
 	{
-//----	writeRegister(REG_FIFO_ADDR_PTR, 0x00);  // Setting address pointer in FIFO data buffer
+		//----	writeRegister(REG_FIFO_ADDR_PTR, 0x00);  // Setting address pointer in FIFO data buffer
 		// Storing the received ACK
 		ACK.dst = _destination;
 		ACK.src = readRegister(REG_FIFO);
@@ -4792,87 +4834,87 @@ uint8_t sx1272_INSAT::getACK(uint32_t wait)
 		ACK.data[0] = readRegister(REG_FIFO);
 
 		// Checking the received ACK
-		if( ACK.dst == packet_sent.src )
+		if (ACK.dst == packet_sent.src)
 		{
-			if( ACK.src == packet_sent.dst )
+			if (ACK.src == packet_sent.dst)
 			{
-				if( ACK.packnum == packet_sent.packnum )
+				if (ACK.packnum == packet_sent.packnum)
 				{
-					if( ACK.length == 0 )
+					if (ACK.length == 0)
 					{
-						if( ACK.data[0] == CORRECT_PACKET )
+						if (ACK.data[0] == CORRECT_PACKET)
 						{
 							state = 0;
-							#if (SX1272_debug_mode > 0)
+#if (SX1272_debug_mode > 0)
 							// Printing the received ACK
 							my_printf(F("## ACK received:"));
-							my_printf(ACK.dst,HEX);
+							my_printf(ACK.dst, HEX);
 							my_printf("|");
-							my_printf(ACK.src,HEX);
+							my_printf(ACK.src, HEX);
 							my_printf("|");
-							my_printf(ACK.packnum,HEX);
+							my_printf(ACK.packnum, HEX);
 							my_printf("|");
-							my_printf(ACK.length,HEX);
+							my_printf(ACK.length, HEX);
 							my_printf("|");
-							my_printf(ACK.data[0],HEX);
+							my_printf(ACK.data[0], HEX);
 							my_printf(F(" ##"));
 							my_printf();
-							#endif
+#endif
 						}
 						else
 						{
 							state = 3;
-							#if (SX1272_debug_mode > 0)
-								my_printf(F("** N-ACK received **"));
-								my_printf();
-							#endif
+#if (SX1272_debug_mode > 0)
+							my_printf(F("** N-ACK received **"));
+							my_printf();
+#endif
 						}
 					}
 					else
 					{
 						state = 4;
-						#if (SX1272_debug_mode > 0)
-							my_printf(F("** ACK length incorrectly received **"));
-							my_printf();
-						#endif
+#if (SX1272_debug_mode > 0)
+						my_printf(F("** ACK length incorrectly received **"));
+						my_printf();
+#endif
 					}
 				}
 				else
 				{
 					state = 5;
-					#if (SX1272_debug_mode > 0)
-						my_printf(F("** ACK number incorrectly received **"));
-						my_printf();
-					#endif
+#if (SX1272_debug_mode > 0)
+					my_printf(F("** ACK number incorrectly received **"));
+					my_printf();
+#endif
 				}
 			}
 			else
 			{
 				state = 6;
-				#if (SX1272_debug_mode > 0)
-					my_printf(F("** ACK source incorrectly received **"));
-					my_printf();
-				#endif
+#if (SX1272_debug_mode > 0)
+				my_printf(F("** ACK source incorrectly received **"));
+				my_printf();
+#endif
 			}
 		}
 		else
 		{
 			state = 7;
-			#if (SX1272_debug_mode > 0)
-				my_printf(F("** ACK destination incorrectly received **"));
-				my_printf();
-			#endif
+#if (SX1272_debug_mode > 0)
+			my_printf(F("** ACK destination incorrectly received **"));
+			my_printf();
+#endif
 		}
 	}
 	else
 	{
 		state = 8;
-		#if (SX1272_debug_mode > 0)
-			my_printf(F("** ACK lost **"));
-			my_printf();
-		#endif
+#if (SX1272_debug_mode > 0)
+		my_printf(F("** ACK lost **"));
+		my_printf();
+#endif
 	}
-	clearFlags();	// Initializing flags
+	clearFlags(); // Initializing flags
 	return state;
 }
 
@@ -4883,8 +4925,8 @@ uint8_t sx1272_INSAT::getACK(uint32_t wait)
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketMAXTimeoutACKRetries(	uint8_t dest, 
-													char  *payload)
+uint8_t sx1272_INSAT::sendPacketMAXTimeoutACKRetries(uint8_t dest,
+													 char *payload)
 {
 	return sendPacketTimeoutACKRetries(dest, payload, MAX_TIMEOUT);
 }
@@ -4896,9 +4938,9 @@ uint8_t sx1272_INSAT::sendPacketMAXTimeoutACKRetries(	uint8_t dest,
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketMAXTimeoutACKRetries(	uint8_t dest, 
-													uint8_t *payload, 
-													uint16_t length16)
+uint8_t sx1272_INSAT::sendPacketMAXTimeoutACKRetries(uint8_t dest,
+													 uint8_t *payload,
+													 uint16_t length16)
 {
 	return sendPacketTimeoutACKRetries(dest, payload, length16, MAX_TIMEOUT);
 }
@@ -4921,14 +4963,14 @@ uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest, char *payload)
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeoutACKRetries'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeoutACKRetries'"));
+#endif
 
 	// Sending packet to 'dest' destination and waiting an ACK response.
 	state = 1;
-	while( (state != 0) && (_retries <= _maxRetries) )
+	while ((state != 0) && (_retries <= _maxRetries))
 	{
 		state = sendPacketTimeoutACK(dest, payload);
 		_retries++;
@@ -4952,20 +4994,20 @@ uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest, char *payload)
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest, 
-												uint8_t *payload, 
-												uint16_t length16)
+uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest,
+												  uint8_t *payload,
+												  uint16_t length16)
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeoutACKRetries'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeoutACKRetries'"));
+#endif
 
 	// Sending packet to 'dest' destination and waiting an ACK response.
 	state = 1;
-	while( (state != 0) && (_retries <= _maxRetries) )
+	while ((state != 0) && (_retries <= _maxRetries))
 	{
 		state = sendPacketTimeoutACK(dest, payload, length16);
 		_retries++;
@@ -4989,20 +5031,20 @@ uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest,
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest, 
-												char *payload, 
-												uint32_t wait)
+uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest,
+												  char *payload,
+												  uint32_t wait)
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeoutACKRetries'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeoutACKRetries'"));
+#endif
 
 	// Sending packet to 'dest' destination and waiting an ACK response.
 	state = 1;
-	while( (state != 0) && (_retries <= _maxRetries) )
+	while ((state != 0) && (_retries <= _maxRetries))
 	{
 		state = sendPacketTimeoutACK(dest, payload, wait);
 		_retries++;
@@ -5026,21 +5068,21 @@ uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest,
    state = 1  --> There has been an error while executing the command
    state = 0  --> The command has been executed with no errors
 */
-uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest, 
-												uint8_t *payload, 
-												uint16_t length16, 
-												uint32_t wait)
+uint8_t sx1272_INSAT::sendPacketTimeoutACKRetries(uint8_t dest,
+												  uint8_t *payload,
+												  uint16_t length16,
+												  uint32_t wait)
 {
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'sendPacketTimeoutACKRetries'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'sendPacketTimeoutACKRetries'"));
+#endif
 
 	// Sending packet to 'dest' destination and waiting an ACK response.
 	state = 1;
-	while( (state != 0) && (_retries <= _maxRetries) )
+	while ((state != 0) && (_retries <= _maxRetries))
 	{
 		state = sendPacketTimeoutACK(dest, payload, length16, wait);
 		_retries++;
@@ -5062,14 +5104,14 @@ uint8_t sx1272_INSAT::getTemp()
 	uint8_t st0;
 	uint8_t state = 2;
 
-	#if (SX1272_debug_mode > 1)
-		my_printf();
-		my_printf(F("Starting 'getTemp'"));
-	#endif
+#if (SX1272_debug_mode > 1)
+	my_printf();
+	my_printf(F("Starting 'getTemp'"));
+#endif
 
-	st0 = readRegister(REG_OP_MODE);	// Save the previous status
+	st0 = readRegister(REG_OP_MODE); // Save the previous status
 
-	if( _modem == LORA )
+	if (_modem == LORA)
 	{ // Allowing access to FSK registers while in LoRa standby mode
 		writeRegister(REG_OP_MODE, LORA_STANDBY_FSK_REGS_MODE);
 	}
@@ -5077,28 +5119,27 @@ uint8_t sx1272_INSAT::getTemp()
 	state = 1;
 	// Saving temperature value
 	_temp = readRegister(REG_TEMP);
-	if( _temp & 0x80 ) // The SNR sign bit is 1
+	if (_temp & 0x80) // The SNR sign bit is 1
 	{
 		// Invert and divide by 4
-		_temp = ( ( ~_temp + 1 ) & 0xFF );
-    }
-    else
-    {
+		_temp = ((~_temp + 1) & 0xFF);
+	}
+	else
+	{
 		// Divide by 4
-		_temp = ( _temp & 0xFF );
+		_temp = (_temp & 0xFF);
 	}
 
+#if (SX1272_debug_mode > 1)
+	my_printf(F("## Temperature is: "));
+	my_printf(_temp);
+	my_printf(F(" ##"));
+	my_printf();
+#endif
 
-	#if (SX1272_debug_mode > 1)
-		my_printf(F("## Temperature is: "));
-		my_printf(_temp);
-		my_printf(F(" ##"));
-		my_printf();
-	#endif
-
-	if( _modem == LORA )
+	if (_modem == LORA)
 	{
-		writeRegister(REG_OP_MODE, st0);	// Getting back to previous status
+		writeRegister(REG_OP_MODE, st0); // Getting back to previous status
 	}
 
 	state = 0;
@@ -5107,62 +5148,59 @@ uint8_t sx1272_INSAT::getTemp()
 
 /*
  Function: It sets the CAD mode to search Channel Activity Detection
- Returns: Integer that determines if there has been any error   
+ Returns: Integer that determines if there has been any error
    state = true   --> Channel Activity Detected
    state = false  --> Channel Activity NOT Detected
 */
 bool sx1272_INSAT::cadDetected()
-{	
+{
 	uint8_t val = 0;
-	
+
 	// get actual time
 	unsigned long time = (TIM6->CNT);
-	
+
 	// set LNA
-	sx1272.writeRegister(REG_LNA,0x23);
-	sx1272.clearFlags();	
-	
-    sx1272.getRSSI();
-    
-	#if (SX1272_debug_mode > 1) 
-		my_printf(F("Inside CAD DETECTION -> RSSI: "));
-		my_printf(sx1272._RSSI);
-	#endif
-	
-	if( _modem == LORA )
-	{	
-		#if (SX1272_debug_mode > 1) 
-			my_printf(F("Set CAD mode"));
-		#endif
-		
+	sx1272.writeRegister(REG_LNA, 0x23);
+	sx1272.clearFlags();
+
+	sx1272.getRSSI();
+
+#if (SX1272_debug_mode > 1)
+	my_printf(F("Inside CAD DETECTION -> RSSI: "));
+	my_printf(sx1272._RSSI);
+#endif
+
+	if (_modem == LORA)
+	{
+#if (SX1272_debug_mode > 1)
+		my_printf(F("Set CAD mode"));
+#endif
+
 		// Setting LoRa CAD mode
-		sx1272.writeRegister(REG_OP_MODE,0x87);  
-	} 
-	
+		sx1272.writeRegister(REG_OP_MODE, 0x87);
+	}
+
 	// Wait for IRQ CadDone
-    val = sx1272.readRegister(REG_IRQ_FLAGS);
-    while((bitRead(val,2) == 0) && ((TIM6->CNT)-time)<10000 )
-    {
-      val = sx1272.readRegister(REG_IRQ_FLAGS);
-    }    
-	
+	val = sx1272.readRegister(REG_IRQ_FLAGS);
+	while ((bitRead(val, 2) == 0) && ((TIM6->CNT) - time) < 10000)
+	{
+		val = sx1272.readRegister(REG_IRQ_FLAGS);
+	}
+
 	// After waiting or detecting CadDone
 	// check 'CadDetected' bit in 'RegIrqFlags' register
-    if(bitRead(val,0) == 1)
-    { 
-		#if (SX1272_debug_mode > 1) 
-			my_printf(F("CAD true"));
-		#endif
+	if (bitRead(val, 0) == 1)
+	{
+#if (SX1272_debug_mode > 1)
+		my_printf(F("CAD true"));
+#endif
 		return true;
 	}
-	
-	#if (SX1272_debug_mode > 1) 
-		my_printf(F("CAD false"));
-	#endif
+
+#if (SX1272_debug_mode > 1)
+	my_printf(F("CAD false"));
+#endif
 	return false;
-	
 }
 
-
-
-sx1272_INSAT	sx1272 = sx1272_INSAT();
+sx1272_INSAT sx1272 = sx1272_INSAT();
