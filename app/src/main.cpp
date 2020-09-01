@@ -1,4 +1,10 @@
-#include <sx1272_comm.h>
+/*
+ * main.c
+ *
+ *  Created on: 16 août 2018
+ *      Author: Laurent
+ */
+
 #include "stm32f0xx.h"
 
 extern "C"{
@@ -27,23 +33,25 @@ int main(void)
 
 	// Initialize LED and USER Button
 	BSP_LED_Init();
-	BSP_PB_Init();
+	//BSP_PB_Init();
+	BSP_PB6_Init();
+
+	//Initialise Timer and NVIC for interrupt
+	BSP_TIMER_Timebase_Init();
+	BSP_NVIC_Init();
 
 	// Initialize Debug Console
 	BSP_Console_Init();
 	my_printf("\r\nConsole Ready!\r\n");
 	my_printf("SYSCLK = %d Hz\r\n", SystemCoreClock);
 
-	// Initialize SPI1
-	BSP_SPI1_Init();
-
-	// Setup SX1272 according to rxNode.h
-	SX1272_Setup();
+	//setup();
+	BSP_LED_On();
+	//BSP_TIMER2_Off();
 
 	while(1)
 	{
-		RX(1000);
-		TX(msg, ADDR_RX_NODE, 1000);
+		//TX();
 	}
 }
 
