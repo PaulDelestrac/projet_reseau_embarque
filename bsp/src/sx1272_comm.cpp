@@ -1,6 +1,6 @@
 #include <sx1272_comm.h>
 
-// Declaration variables globales
+// Declaration globals variables
 
 int cpok = 0;
 int cpall = 0;

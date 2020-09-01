@@ -19,6 +19,9 @@ static uint8_t SystemClock_Config	(void);
 
 int main(void)
 {
+	// Variable declaration
+	char msg[] = "Cest pas des Pol\r\n";
+
 	// Configure System Clock for 48MHz from 8MHz HSE
 	SystemClock_Config();
 
@@ -40,6 +43,7 @@ int main(void)
 	while(1)
 	{
 		RX(1000);
+		TX(msg, ADDR_RX_NODE, 1000);
 	}
 }
 
