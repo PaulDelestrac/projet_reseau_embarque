@@ -384,6 +384,104 @@ void BSP_PB6_Init(void)
 	EXTI->FTSR |=  EXTI_FTSR_FT6;
 }
 
+void BSP_TIMER_Timebase_Init()
+{
+	// Enable TIM2 clock
+	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+
+	// Reset TIM2 configuration
+	TIM2->CR1 = 0x0000;
+	TIM2->CR2 = 0x0000;
+
+	// Set TIM2 prescaler
+	// Fck = 48MHz -> /48000 = 1KHz counting frequency
+	TIM2->PSC = (uint16_t) 48000 -1;
+
+	// Set TIM2 auto-reload register for 1s
+	TIM2->ARR = (uint16_t) 1000 -1;
+
+	// Enable auto-reload preload
+	TIM2->CR1 |= TIM_CR1_ARPE;
+
+	// Enable Interrupt upon Update Event
+	TIM2->DIER |= TIM_DIER_UIE;
+
+	// Start TIM2 counter
+	TIM2->CR1 |= TIM_CR1_CEN;
+}
+
+void BSP_TIMER2_On(void)
+{
+	TIM2->CR1 |= TIM_CR1_CEN;
+}
+
+void BSP_TIMER2_Off(void)
+{
+	TIM2->CR1 = 0;
+}
+
+void BSP_NVIC_Init()
+{
+	// Set maximum priority for EXTI line 4 to 15 interrupts
+	NVIC_SetPriority(EXTI4_15_IRQn, 0);
+
+	// Enable TIM6 interrupts
+	NVIC_EnableIRQ(TIM2_IRQn);
+}
+
+void TIM2_IRQHandler()
+{
+	int verif=0;
+	// Test for TIM2 update pending interrupt
+	if ((TIM2->SR & TIM_SR_UIF) == TIM_SR_UIF)
+	{
+		// Clear pending interrupt flag
+		TIM2->SR &= ~TIM_SR_UIF;
+
+		// Do what you need
+		my_printf("#");
+		flagTimer=1;
+	}
+	if ((EXTI->PR & EXTI_PR_PR6_Msk) != 0)
+		{
+			// Clear pending bit 13 by writing a '1'
+	                // Do not use OR masking here
+			EXTI->PR = EXTI_PR_PR6;
+
+			// Do what you need
+			my_printf(".");
+			flagCS=1;
+		}
+}
+
+//Enable on interrupt on PB6, D10, CS
+void BSP_PB6_Init(void)
+{
+	// Enable GPIOB clock
+	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+
+	// Configure PB6 as input
+	GPIOB->MODER &= ~GPIO_MODER_MODER6_Msk;
+	GPIOB->MODER |= (0x00 <<GPIO_MODER_MODER6_Pos);
+
+	// Disable PB6 Pull-up/Pull-down
+	GPIOB->PUPDR &= ~GPIO_PUPDR_PUPDR6_Msk;
+
+	// Enable SYSCFG clock
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+
+	// Select Port B as interrupt source for EXTI line 6
+	SYSCFG->EXTICR[1] &= ~ SYSCFG_EXTICR2_EXTI6_Msk;
+	SYSCFG->EXTICR[1] |=   SYSCFG_EXTICR2_EXTI6_PB;
+
+	// Enable EXTI line 6
+	EXTI->IMR |= EXTI_IMR_IM6;
+
+	// Disable Rising / Enable Falling trigger
+	EXTI->RTSR &= ~EXTI_RTSR_RT6;
+	EXTI->FTSR |=  EXTI_FTSR_FT6;
+}
+
 #ifdef __cplusplus
 }
 #endif
