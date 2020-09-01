@@ -39,6 +39,7 @@ int main(void)
 
 	while(1)
 	{
+		RX(1000);
 	}
 }
 
