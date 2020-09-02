@@ -54,6 +54,7 @@ dkms.conf
 # ATOLLIC
 Debug/
 *.elf.launch
+.settings/language.settings.xml
 
 # VSCODE
 .vscode/
