@@ -120,7 +120,7 @@ char RXSync()
 {
 	char stateRX = '0';
 	uint8_t lgMessage = 0;
-	sx1272.packet_received.data[0] = '\0';
+	//sx1272.packet_received.data[0] = '\0';
 
 	// Receive packets continuously
 	if (configOK == true)
@@ -184,13 +184,13 @@ char RXSync()
 		}
 	}
 
-	while (!estMessInit(sx1272.packet_received.data));
+	while (!estMessInit((char) sx1272.packet_received.data[0]));
 	return stateRX;
 }
 
-bool estMessInit(uint8_t* recu)
+bool estMessInit(char recu)
 {
-	return (char) recu[0] == '@';
+	return recu == '@';
 }
 
 // Main loop function
@@ -318,7 +318,7 @@ void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent)
 char receivePacket(uint32_t waitPeriod = 1000)
 {
 	char e = '0';
-	uint8_t checksum;
+	uint8_t checksum = 0;
 
 	// Receive
 	e = RX(waitPeriod);
@@ -335,19 +335,19 @@ char receivePacket(uint32_t waitPeriod = 1000)
 			messageSize = (char) sx1272.packet_received.data[3];
 
 			// Verify EOF
-			if((char) sx1272.packet_received.data[5 + messageSize] == '&')
+			if((char) sx1272.packet_received.data[4 + messageSize] == '&')
 			{
 				// Verify destAddress is our address
-				if(SELF_ADDRESS == destAddress)
+				if((SELF_ADDRESS == destAddress) || (destAddress == BROADCAST_ADDRESS))
 				{
 					// Calculate CS
-					for(uint8_t i = 1 ; i < 3 + messageSize ; i++)
+					for(uint8_t i = 1 ; i < 4 + messageSize ; i++)
 					{
 						checksum += sx1272.packet_received.data[i];
 					}
 
 					// Verify checksum
-					if (checksum == (char) sx1272.packet_received.data[4 + messageSize])
+					if (checksum == (char) sx1272.packet_received.data[5 + messageSize])
 					{
 						// Save the message
 						for (uint8_t i = 0; i < messageSize; i++)

@@ -50,7 +50,7 @@ int main(void)
 {
 	// Variable declaration
 	// char destIndex = '2';
-	char msgContent[] = "ok";
+	char msgContent[] = "POLO";
 	char packet[8 + strlen(msgContent)];
 
 	// Configure System Clock for 48MHz from 8MHz HSE

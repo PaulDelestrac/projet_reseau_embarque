@@ -52,7 +52,6 @@ void ttp(char* packet, char* msgContent)
 		Etat = SEND;
 		break;
 	case(SEND):
-		// set send
 		sendPacket(packet, INDEX, BROADCAST_ADDRESS, msgContent);
 		Etat = ATT_AP;
 		break;

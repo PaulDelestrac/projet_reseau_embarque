@@ -8,7 +8,7 @@ extern "C" {
 #include "string.h"
 #include "delay.h"
 
-#define INDEX 0
+#define INDEX 1
 #define NBR_NOEUD 4
 #define PERIOD 2
 

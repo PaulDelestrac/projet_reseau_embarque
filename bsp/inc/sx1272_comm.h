@@ -9,7 +9,7 @@ void TX(char* message, uint8_t destAddress, uint32_t waitPeriod);
 char RX(uint32_t waitPeriod);
 void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent);
 char receivePacket(uint32_t waitPeriod);
-bool estMessInit(uint8_t *recu);
+bool estMessInit(char recu);
 char RXSync();
 
 // Configuration LoRA or FSK
