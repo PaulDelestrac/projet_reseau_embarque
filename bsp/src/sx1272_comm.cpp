@@ -1,9 +1,14 @@
 #include <sx1272_comm.h>
 
 // Declaration globals variables
-
 int cpok = 0;
 int cpall = 0;
+
+char expAddress = '0';
+char destAddress = '0';
+char messageSize = '0';
+char messageCS = '0';
+char message[255];
 
 // State Variables
 int8_t e;
@@ -55,8 +60,8 @@ void SX1272_Setup()
 			e = sx1272.setHeaderON();
 
 			// Set transmission mode
-			e = sx1272.setBW(BANDWIDTH); 	// BW = 125 KHz
-			e = sx1272.setCR(CODING_RATE); 	// CR = 4/5
+			e = sx1272.setBW(BANDWIDTH); 			// BW = 125 KHz
+			e = sx1272.setCR(CODING_RATE); 			// CR = 4/5
 			e = sx1272.setSF(SPREADING_FACTOR); 	// SF = 12
 
 			// Set CRC
@@ -214,7 +219,6 @@ void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent)
 		 packet[4+i] = msgContent[i];
 	 }
 	 packet[4 + lengthMsg] = '&';
-
 	 for(uint8_t i = 1 ; i < 3 + lengthMsg ; i++)
 	 {
 		 checksum += packet[i];
@@ -224,4 +228,84 @@ void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent)
 	 packet[6 + lengthMsg] = '\r';
 	 packet[7 + lengthMsg] = '\n';
 	 TX(packet, ADDR_RX_NODE, 1000);
+}
+
+// Main loop function
+/*
+*  	'0' => CORRECT
+*	'1' => SOF false
+*	'2' => EOF false
+*	'3' => Not my address
+*	'4' => CS false
+*/
+char receivePacket(uint32_t waitPeriod = 1000)
+{
+	char e = '0';
+	uint8_t checksum;
+
+	// Receive
+	e = RX(waitPeriod);
+
+	// Verify reception
+	if(e == '0')
+	{
+		// Verify SOF
+		if((char)sx1272.packet_received.data[0] == '*')
+		{
+			// Save EXP address, DEST address & msg Size
+			expAddress = (char) sx1272.packet_received.data[1];
+			destAddress = (char) sx1272.packet_received.data[2];
+			messageSize = (char) sx1272.packet_received.data[3];
+
+			// Verify EOF
+			if((char) sx1272.packet_received.data[5 + messageSize] == '&')
+			{
+				// Verify destAddress is our address
+				if(SELF_ADDRESS == destAddress)
+				{
+					// Calculate CS
+					for(uint8_t i = 1 ; i < 3 + messageSize ; i++)
+					{
+						checksum += sx1272.packet_received.data[i];
+					}
+
+					// Verify checksum
+					if (checksum == (char) sx1272.packet_received.data[4 + messageSize])
+					{
+						// Save the message
+						for (uint8_t i = 0; i < messageSize; i++)
+						{
+							message[i] = (char) sx1272.packet_received.data[i+4];
+						}
+
+						// Return CORRECT
+						return '0';
+					}
+					else
+					{
+						// CS false
+						return '4';
+					}
+
+				}
+				else
+				{
+					// Not my address
+					return '3';
+				}
+			}
+			else
+			{
+				// EOF false
+				return '2';
+			}
+		}
+		else
+		{
+			// SOF false
+			return '1';
+		}
+	}
+
+
 }

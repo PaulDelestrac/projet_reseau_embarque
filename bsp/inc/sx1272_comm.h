@@ -8,6 +8,7 @@ void SX1272_Setup();
 char RX(uint32_t waitPeriod);
 void TX(char* packetToSend, uint8_t destAddress, uint32_t waitPeriod);
 void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent);
+void receivePacket(uint32_t waitPeriod);
 
 // Configuration LoRA or FSK
 
@@ -15,6 +16,9 @@ void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent);
 #define OUT_POWER POW_14	 // min -1, max 14
 #define MOD_TYPE 0           // 0: LORA, 1:FSK
 #define MAX_LENGTH_MSG 32
+
+// TTP
+#define SELF_ADDRESS '1'
 
 // LORA configuration
 #define BANDWIDTH BW_125 // BW_125, BW_250 or BW_500

@@ -20,7 +20,6 @@ static uint8_t SystemClock_Config	(void);
 int main(void)
 {
 	// Variable declaration
-	char expIndex = '1';
 	char destIndex = '2';
 	char msgContent[] = "ok";
 	char packet[8 + strlen(msgContent)];
@@ -45,7 +44,7 @@ int main(void)
 
 	while(1)
 	{
-		sendPacket(packet, expIndex, destIndex, msgContent);
+		sendPacket(packet, EXP_INDEX, destIndex, msgContent);
 	}
 }
 
