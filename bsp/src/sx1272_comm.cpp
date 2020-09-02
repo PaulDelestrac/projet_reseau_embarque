@@ -198,3 +198,30 @@ void TX(char* message, uint8_t destAddress = ADDR_RX_NODE, uint32_t waitPeriod =
 		delay_ms(waitPeriod); //delay to send packet every PeriodTransmission
 	}
 }
+
+void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent)
+{
+	 uint8_t lengthMsg = 0;
+	 uint8_t checksum = 0;
+	 lengthMsg = strlen(msgContent);
+
+	 packet[0] = '*';
+	 packet[1] = expIndex;
+	 packet[2] = destIndex;
+	 packet[3] = lengthMsg;
+	 for(uint8_t i = 0 ; i < lengthMsg ; i++)
+	 {
+		 packet[4+i] = msgContent[i];
+	 }
+	 packet[4 + lengthMsg] = '&';
+
+	 for(uint8_t i = 1 ; i < 3 + lengthMsg ; i++)
+	 {
+		 checksum += packet[i];
+	 }
+	 checksum = checksum & 0xFF;
+	 packet[5 + lengthMsg] = checksum;
+	 packet[6 + lengthMsg] = '\r';
+	 packet[7 + lengthMsg] = '\n';
+	 TX(packet, ADDR_RX_NODE, 1000);
+}

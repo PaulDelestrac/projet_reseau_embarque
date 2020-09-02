@@ -6,7 +6,8 @@
 
 void SX1272_Setup();
 char RX(uint32_t waitPeriod);
-void TX(char* message, uint8_t destAddress, uint32_t waitPeriod);
+void TX(char* packetToSend, uint8_t destAddress, uint32_t waitPeriod);
+void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent);
 
 // Configuration LoRA or FSK
 
@@ -30,6 +31,6 @@ void TX(char* message, uint8_t destAddress, uint32_t waitPeriod);
 #define FREQ_CENTER CH_868v3
 #define MAX_RETRY 3
 #define WAIT_RX_MAX 10000 //en ms
-#define ADDR_RX_NODE BROADCAST_ADDR
+#define ADDR_RX_NODE 8
 
 #endif /* APP_INC_RXNODE_H_ */
