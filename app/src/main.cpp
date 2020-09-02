@@ -26,7 +26,7 @@ void synchro(void)
 	if (INDEX == 0)
 	{
 		char msg[] = "@";
-		TX(msg, (uint8_t) 'F', 1000);
+		TX(msg, ADDR_RX_NODE, 1000);
 	}
 	else
 	{
@@ -50,7 +50,7 @@ int main(void)
 {
 	// Variable declaration
 	// char destIndex = '2';
-	char msgContent[] = "ok";
+	char msgContent[] = "jo";
 	char packet[8 + strlen(msgContent)];
 
 	// Configure System Clock for 48MHz from 8MHz HSE
@@ -76,6 +76,7 @@ int main(void)
 
 	while(1)
 	{
+		//sendPacket(packet, INDEX, BROADCAST_ADDRESS, msgContent);
 		ttp(packet, msgContent);
 	}
 }

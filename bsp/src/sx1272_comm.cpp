@@ -288,7 +288,7 @@ void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent)
 	 lengthMsg = strlen(msgContent);
 
 	 packet[0] = '*';
-	 packet[1] = expIndex;
+	 packet[1] = expIndex+'0';
 	 packet[2] = destIndex;
 	 packet[3] = lengthMsg;
 	 for(uint8_t i = 0 ; i < lengthMsg ; i++)
@@ -296,7 +296,7 @@ void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent)
 		 packet[4+i] = msgContent[i];
 	 }
 	 packet[4 + lengthMsg] = '&';
-	 for(uint8_t i = 1 ; i < 3 + lengthMsg ; i++)
+	 for(uint8_t i = 1 ; i < 4 + lengthMsg ; i++)
 	 {
 		 checksum += packet[i];
 	 }
