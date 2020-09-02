@@ -16,6 +16,9 @@ extern "C"
 #include "stm32f0xx.h"
 
 
+int my_printf	(const char *format, ...);
+int my_sprintf	(char *out, const char *format, ...);
+
 /*
  * LED driver functions
  */

@@ -1,11 +1,11 @@
 /*
- * ttp.c
+ * ttp.cpp
  *
  *  Created on: 1 sept. 2020
  *      Author: Sebastien
  */
 
-
+#include "ttp.h"
 extern "C"{
 	#include "main.h"
 	#include "bsp.h"
@@ -24,50 +24,50 @@ typedef enum
 } state;
 
 state Etat = INIT;
-void ttp(void)
+void ttp(char* packet, char* msgContent)
 {
 	int compteur_synchro = 0;
 
 	switch(Etat)
 	{
 	case(INIT):
-		init();
-		state = SYNCHRO;
+		Etat = SYNCHRO;
 		break;
 	case(SYNCHRO):
 		synchro();
 		if (INDEX == 0)
 		{
-			state = SEND;
+			Etat = SEND;
 		}
 		else
 		{
-			state = ATT_AV;
+			Etat = ATT_AV;
 		}
 		break;
-	case(ETAT_AV):
+	case(ATT_AV):
 		for (int i=0; i<INDEX; i++)
 		{
-			RX(PERIOD * 1000);
+			receivePacket(PERIOD * 1000);
 		}
-		state = SEND;
+		Etat = SEND;
 		break;
 	case(SEND):
 		// set send
-		state = ATT_AP;
+		sendPacket(packet, INDEX, BROADCAST_ADDRESS, msgContent);
+		Etat = ATT_AP;
 		break;
 	case(ATT_AP):
 		for (int i=INDEX+1; i<NBR_NOEUD; i++)
 		{
-			RX(PERIOD * 1000);
+			receivePacket(PERIOD * 1000);
 		}
 		if (compteur_synchro > 9)
 		{
-			state = SYNCHRO;
+			Etat = SYNCHRO;
 		}
 		else
 		{
-			state = ATT_AV;
+			Etat = ATT_AV;
 		}
 		break;
 	}

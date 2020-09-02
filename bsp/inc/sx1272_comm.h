@@ -5,10 +5,11 @@
 #include "sx1272_INSAT.h"
 
 void SX1272_Setup();
+void TX(char* message, uint8_t destAddress, uint32_t waitPeriod);
 char RX(uint32_t waitPeriod);
 void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent);
-void receivePacket(uint32_t waitPeriod);
-int estMessInit(char *recu);
+char receivePacket(uint32_t waitPeriod);
+bool estMessInit(uint8_t *recu);
 char RXSync();
 
 // Configuration LoRA or FSK
@@ -19,7 +20,8 @@ char RXSync();
 #define MAX_LENGTH_MSG 32
 
 // TTP
-#define SELF_ADDRESS '1'
+#define SELF_ADDRESS INDEX
+#define BROADCAST_ADDRESS 'F'
 
 // LORA configuration
 #define BANDWIDTH BW_125 // BW_125, BW_250 or BW_500

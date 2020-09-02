@@ -19,11 +19,11 @@ int my_sprintf	(char *out, const char *format, ...);
 
 void printchar(char **str, int c);
 
-void init(void);
 void synchro(void);
 void waitPart(int);
 
 #endif /* APP_INC_MAIN_H_ */
 #ifdef __cplusplus
 }
+#include "ttp.h"
 #endif

@@ -120,7 +120,7 @@ char RXSync()
 {
 	char stateRX = '0';
 	uint8_t lgMessage = 0;
-	(char)sx1272.packet_received.data[0] = '\0';
+	sx1272.packet_received.data[0] = '\0';
 
 	// Receive packets continuously
 	if (configOK == true)
@@ -184,13 +184,13 @@ char RXSync()
 		}
 	}
 
-	while ((char)sx1272.packet_received.data[0] =='\0');
+	while (!estMessInit(sx1272.packet_received.data));
 	return stateRX;
 }
 
-int estMessInit(char[] recu)
+bool estMessInit(uint8_t* recu)
 {
-
+	return (char) recu[0] == '@';
 }
 
 // Main loop function
@@ -271,7 +271,7 @@ char RX(uint32_t waitPeriod = 1000)
 	return stateRX;
 }
 
-void TX(char* message, uint8_t destAddress = ADDR_RX_NODE, uint32_t waitPeriod = 1000)
+void TX(char* message, uint8_t destAddress, uint32_t waitPeriod)
 {
 	// Transmit a packet continuously with a pause of "waitPeriod"
 	if (configOK == true)
@@ -384,5 +384,5 @@ char receivePacket(uint32_t waitPeriod = 1000)
 		}
 	}
 
-
+	return '5';
 }

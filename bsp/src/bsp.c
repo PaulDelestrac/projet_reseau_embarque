@@ -300,7 +300,7 @@ void BSP_TIMER_Timebase_Init(void)
 	TIM2->PSC = (uint16_t) 48000 -1;
 
 	// Set TIM2 auto-reload register for 1s
-	TIM2->ARR = (uint16_t) sec*1000 -1;
+	TIM2->ARR = (uint16_t) 1000 -1;
 
 	// Enable auto-reload preload
 	TIM2->CR1 |= TIM_CR1_ARPE;
@@ -335,7 +335,6 @@ void BSP_NVIC_Init()
 
 void TIM2_IRQHandler()
 {
-	int verif=0;
 	// Test for TIM2 update pending interrupt
 	if ((TIM2->SR & TIM_SR_UIF) == TIM_SR_UIF)
 	{
@@ -347,6 +346,7 @@ void TIM2_IRQHandler()
 		flagTimer=1;
 	}
 }
+
 extern int recevoir;
 void  EXTI4_15_IRQHandler()
 {

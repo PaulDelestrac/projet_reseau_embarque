@@ -19,13 +19,37 @@ extern "C"{
  */
 
 static uint8_t SystemClock_Config	(void);
-
 int recevoir = 0;
 
-void init(void)
+void synchro(void)
+{
+	if (INDEX == 0)
+	{
+		char msg[] = "@";
+		TX(msg, (uint8_t) 'F', 1000);
+	}
+	else
+	{
+		RXSync();
+	}
+}
+
+extern uint8_t flagTimer;
+void waitPart(int sec)
+{
+	TIM2->ARR = (uint16_t) sec*1000 -1;
+	TIM2->CR1 |= TIM_CR1_CEN;
+	while (flagTimer == 0);
+	flagTimer = 0;
+}
+
+/*
+ * Project Entry Point
+ */
+int main(void)
 {
 	// Variable declaration
-	char destIndex = '2';
+	// char destIndex = '2';
 	char msgContent[] = "ok";
 	char packet[8 + strlen(msgContent)];
 
@@ -49,36 +73,10 @@ void init(void)
 	BSP_LED_On();
 	//BSP_TIMER2_Off();
 	BSP_TIMER_Timebase_Init();
-}
 
-void synchro(void)
-{
-	if (INDEX == 0)
-	{
-		// envoyer trame
-	}
-	else
-	{
-		RXSync();
-	}
-}
-
-void waitPart(int sec)
-{
-	TIM2->ARR = (uint16_t) sec*1000 -1;
-	TIM2->CR1 |= TIM_CR1_CEN;
-	while (flagTimer==0);
-	flagTimer=0;
-}
-
-/*
- * Project Entry Point
- */
-int main(void)
-{
 	while(1)
 	{
-		ttp();
+		ttp(packet, msgContent);
 	}
 }
 
