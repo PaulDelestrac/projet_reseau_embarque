@@ -111,6 +111,83 @@ void SX1272_Setup()
 	}
 }
 
+char RXSync()
+{
+	char stateRX = '0';
+	uint8_t lgMessage = 0;
+	(char)sx1272.packet_received.data[0] = '\0';
+
+	// Receive packets continuously
+	if (configOK == true)
+	{
+		e = sx1272.receivePacketTimeout(WAIT_RX_MAX);
+		cpall = cpall + 1; // total number packet +1
+
+		// Received packet
+		if (e == 0)
+		{
+			stateRX = '0';
+			if (sx1272._reception == CORRECT_PACKET)
+			{
+				// Check if the received packet is correct
+				// The length and the content of the packet is checked
+				// if it is valid, the cpok counter is incremented
+				lgMessage = MAX_LENGTH_MSG;
+				if (sx1272.packet_received.length >= lgMessage) // check the length
+				{
+					cpok = cpok + 1;
+					stateRX = '0';
+				}
+			}
+			else
+			{
+				stateRX = '1';
+			}
+		}
+		// RX Timeout !! No packet received
+		else
+		{
+			stateRX = '2';
+		}
+
+		// Plot receive packets in the serial monitor
+		for (uint8_t i = 0; i < sx1272.packet_received.length - OFFSET_PAYLOADLENGTH; i++)
+		{
+			my_printf("%c", (char)sx1272.packet_received.data[i]);
+		}
+
+		// Plot RSSI
+		// LORA mode
+		if (MOD_TYPE == 0)
+		{
+			e = sx1272.getRSSIpacket();
+		}
+		// FSK mode
+		else
+		{
+			e = sx1272.getRSSI(); // done during RX, no packet RSSI available in FSK mode;
+		}
+
+		// Verify RSSI return
+		if (e == 0)
+		{
+			stateRX = '0';
+		}
+		else
+		{
+			stateRX = '3';
+		}
+	}
+
+	while ((char)sx1272.packet_received.data[0] =='\0');
+	return stateRX;
+}
+
+int estMessInit(char[] recu)
+{
+
+}
+
 // Main loop function
 /*
 *  	stateRX = '0' => Good packet received

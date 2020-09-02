@@ -6,6 +6,7 @@
  */
 
 #include "stm32f0xx.h"
+#include <sx1272_comm.h>
 
 extern "C"{
 	#include "main.h"
@@ -19,11 +20,9 @@ extern "C"{
 
 static uint8_t SystemClock_Config	(void);
 
-/*
- * Project Entry Point
- */
+int recevoir = 0;
 
-int main(void)
+void init(void)
 {
 	// Variable declaration
 	char msg[] = "Cest pas des Pol\r\n";
@@ -37,7 +36,6 @@ int main(void)
 	BSP_PB6_Init();
 
 	//Initialise Timer and NVIC for interrupt
-	BSP_TIMER_Timebase_Init();
 	BSP_NVIC_Init();
 
 	// Initialize Debug Console
@@ -45,13 +43,40 @@ int main(void)
 	my_printf("\r\nConsole Ready!\r\n");
 	my_printf("SYSCLK = %d Hz\r\n", SystemCoreClock);
 
-	//setup();
+	SX1272_Setup();
 	BSP_LED_On();
 	//BSP_TIMER2_Off();
+	BSP_TIMER_Timebase_Init();
+}
 
+void synchro(void)
+{
+	if (INDEX == 0)
+	{
+		// envoyer trame
+	}
+	else
+	{
+		RXSync();
+	}
+}
+
+void waitPart(int sec)
+{
+	TIM2->ARR = (uint16_t) sec*1000 -1;
+	TIM2->CR1 |= TIM_CR1_CEN;
+	while (flagTimer==0);
+	flagTimer=0;
+}
+
+/*
+ * Project Entry Point
+ */
+int main(void)
+{
 	while(1)
 	{
-		//TX();
+		ttp();
 	}
 }
 
