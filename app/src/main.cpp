@@ -1,5 +1,12 @@
-#include <sx1272_comm.h>
+/*
+ * main.c
+ *
+ *  Created on: 16 ao�t 2018
+ *      Author: Laurent
+ */
+
 #include "stm32f0xx.h"
+#include <sx1272_comm.h>
 
 extern "C"{
 	#include "main.h"
@@ -13,11 +20,9 @@ extern "C"{
 
 static uint8_t SystemClock_Config	(void);
 
-/*
- * Project Entry Point
- */
+int recevoir = 0;
 
-int main(void)
+void init(void)
 {
 	// Variable declaration
 	char destIndex = '2';
@@ -29,22 +34,51 @@ int main(void)
 
 	// Initialize LED and USER Button
 	BSP_LED_Init();
-	BSP_PB_Init();
+	//BSP_PB_Init();
+	BSP_PB6_Init();
+
+	//Initialise Timer and NVIC for interrupt
+	BSP_NVIC_Init();
 
 	// Initialize Debug Console
 	BSP_Console_Init();
 	my_printf("\r\nConsole Ready!\r\n");
 	my_printf("SYSCLK = %d Hz\r\n", SystemCoreClock);
 
-	// Initialize SPI1
-	BSP_SPI1_Init();
-
-	// Setup SX1272 according to rxNode.h
 	SX1272_Setup();
+	BSP_LED_On();
+	//BSP_TIMER2_Off();
+	BSP_TIMER_Timebase_Init();
+}
 
+void synchro(void)
+{
+	if (INDEX == 0)
+	{
+		// envoyer trame
+	}
+	else
+	{
+		RXSync();
+	}
+}
+
+void waitPart(int sec)
+{
+	TIM2->ARR = (uint16_t) sec*1000 -1;
+	TIM2->CR1 |= TIM_CR1_CEN;
+	while (flagTimer==0);
+	flagTimer=0;
+}
+
+/*
+ * Project Entry Point
+ */
+int main(void)
+{
 	while(1)
 	{
-		sendPacket(packet, EXP_INDEX, destIndex, msgContent);
+		ttp();
 	}
 }
 

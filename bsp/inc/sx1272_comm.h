@@ -6,9 +6,10 @@
 
 void SX1272_Setup();
 char RX(uint32_t waitPeriod);
-void TX(char* packetToSend, uint8_t destAddress, uint32_t waitPeriod);
 void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent);
 void receivePacket(uint32_t waitPeriod);
+int estMessInit(char *recu);
+char RXSync();
 
 // Configuration LoRA or FSK
 
