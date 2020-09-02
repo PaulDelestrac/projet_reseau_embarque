@@ -325,8 +325,8 @@ void BSP_TIMER2_Off(void)
 void BSP_NVIC_Init()
 {
 	// Set maximum priority for EXTI line 4 to 15 interrupts
-	NVIC_SetPriority(EXTI4_15_IRQn, 0);
-	NVIC_EnableIRQ(EXTI4_15_IRQn);
+	//NVIC_SetPriority(EXTI4_15_IRQn, 0);
+	//NVIC_EnableIRQ(EXTI4_15_IRQn);
 
 	// Enable TIM6 interrupts
 	NVIC_SetPriority(TIM2_IRQn, 1);
