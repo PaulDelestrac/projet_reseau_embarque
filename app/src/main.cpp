@@ -30,7 +30,9 @@ void synchro(void)
 	}
 	else
 	{
-		RXSync();
+		while (!estMessInit((char) sx1272.packet_received.data[0])) {
+			RXSync();
+		}
 	}
 }
 
