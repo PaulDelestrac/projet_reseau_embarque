@@ -311,6 +311,32 @@ void BSP_TIMER_Timebase_Init(void)
 	// Start TIM2 counter
 
 }
+void BSP_TIMER6_Timebase_Init(void)
+{
+	// Enable TIM2 clock
+	RCC->APB1ENR |= RCC_APB1ENR_TIM6EN;
+
+	// Reset TIM2 configuration
+	TIM6->CR1 = 0x0000;
+	TIM6->CR2 = 0x0000;
+
+	// Set TIM2 prescaler
+	// Fck = 48MHz -> /48000 = 1KHz counting frequency
+	TIM6->PSC = (uint16_t) 48000 -1;
+
+	// Set TIM2 auto-reload register for 1s
+	TIM6->ARR = (uint16_t) 60000 -1;
+
+	// Enable auto-reload preload
+	TIM6->CR1 |= TIM_CR1_ARPE;
+
+	// Enable Interrupt upon Update Event
+	TIM6->DIER |= TIM_DIER_UIE;
+
+	// Start TIM2 counter
+	TIM6->CR1 |= TIM_CR1_CEN;
+
+}
 
 void BSP_TIMER2_On(void)
 {

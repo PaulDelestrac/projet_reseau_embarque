@@ -50,7 +50,7 @@ int main(void)
 {
 	// Variable declaration
 	// char destIndex = '2';
-	char msgContent[] = "POLO";
+	char msgContent[] = "JO";
 	char packet[8 + strlen(msgContent)];
 
 	// Configure System Clock for 48MHz from 8MHz HSE
@@ -59,10 +59,10 @@ int main(void)
 	// Initialize LED and USER Button
 	BSP_LED_Init();
 	//BSP_PB_Init();
-	BSP_PB6_Init();
+	//BSP_PB6_Init();
 
 	//Initialise Timer and NVIC for interrupt
-	BSP_NVIC_Init();
+	//BSP_NVIC_Init();
 
 	// Initialize Debug Console
 	BSP_Console_Init();
@@ -72,11 +72,11 @@ int main(void)
 	SX1272_Setup();
 	BSP_LED_On();
 	//BSP_TIMER2_Off();
-	BSP_TIMER_Timebase_Init();
+	//BSP_TIMER_Timebase_Init();
+	BSP_TIMER6_Timebase_Init();
 
 	while(1)
 	{
-		//sendPacket(packet, INDEX, BROADCAST_ADDRESS, msgContent);
 		ttp(packet, msgContent);
 	}
 }

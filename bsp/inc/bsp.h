@@ -52,6 +52,7 @@ void BSP_TIMER2_Off(void);
 void BSP_TIMER2_On(void);
 void BSP_NVIC_Init(void);
 void BSP_TIMER_Timebase_Init(void);
+void BSP_TIMER6_Timebase_Init(void);
 
 
 /*

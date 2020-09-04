@@ -208,7 +208,8 @@ char RX(uint32_t waitPeriod = 1000)
 	// Receive packets continuously
 	if (configOK == true)
 	{
-		e = sx1272.receivePacketTimeout(WAIT_RX_MAX);
+		e = sx1272.receivePacketTimeout(PERIOD * 1000);
+
 		cpall = cpall + 1; // total number packet +1
 
 		// Received packet
@@ -283,6 +284,8 @@ void TX(char* message, uint8_t destAddress, uint32_t waitPeriod)
 
 void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent)
 {
+	SX1272_Setup();
+
 	 uint8_t lengthMsg = 0;
 	 uint8_t checksum = 0;
 	 lengthMsg = strlen(msgContent);
@@ -317,6 +320,7 @@ void sendPacket(char* packet, char expIndex, char destIndex, char* msgContent)
 */
 char receivePacket(uint32_t waitPeriod = 1000)
 {
+	SX1272_Setup();
 	char e = '0';
 	uint8_t checksum = 0;
 
